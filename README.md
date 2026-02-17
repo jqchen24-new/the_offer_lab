@@ -1,0 +1,71 @@
+# Data Science Interview Prep Tracker
+
+Minimal web app to track study sessions, daily plans, and progress for data science interview prep. Built with Next.js (App Router), TypeScript, Tailwind, Prisma, and SQLite.
+
+## Features
+
+- **Tasks** – Study sessions with title, duration, scheduled date/time, and tags
+- **Daily plan** – Suggested sessions for today (based on least-practiced tags) and your scheduled tasks
+- **Progress** – Total time, this week’s time, streak, and time-by-tag chart
+- **Tags** – Fixed (SQL, ML, Stats, Python, Behavioral) plus custom tags
+
+No auth in v1 (single-user, local).
+
+## Run locally
+
+1. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+2. **Environment**
+
+   Copy `.env.example` to `.env` in the project root:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Default content: `DATABASE_URL="file:./dev.db"`. Prisma will create the SQLite file when you run migrations.
+
+3. **Database**
+
+   ```bash
+   npx prisma migrate dev --name init
+   npx prisma db seed
+   ```
+
+   This creates the SQLite DB and seeds the 5 fixed tags.
+
+4. **Dev server**
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000).
+
+## Scripts
+
+| Command           | Description                |
+|-------------------|----------------------------|
+| `npm run dev`     | Start Next.js dev server   |
+| `npm run build`   | Production build           |
+| `npm run start`   | Start production server    |
+| `npm run lint`    | Run ESLint                 |
+| `npx prisma migrate dev` | Create/apply migrations |
+| `npx prisma db seed`     | Seed fixed tags          |
+
+## Tech
+
+- **Next.js 15** (App Router), **TypeScript**, **Tailwind CSS**
+- **Prisma** + **SQLite** (local `./dev.db`)
+- **Recharts** for the progress “time by tag” chart
+
+## File structure (main)
+
+- `prisma/schema.prisma` – Tag, Task, TaskTag
+- `src/app/` – Routes: `/` (dashboard), `/plan`, `/tasks`, `/tasks/[id]`, `/progress`, `/tags`
+- `src/components/` – Layout, tasks, plan, progress, ui
+- `src/lib/` – `db`, `tags`, `tasks`, `progress`

@@ -1,0 +1,46 @@
+import { getAllTags } from "@/lib/tags";
+import { getTasks } from "@/lib/tasks";
+import { TaskForm } from "@/components/tasks/TaskForm";
+import {
+  completeTaskAction,
+  uncompleteTaskAction,
+  deleteTaskAction,
+} from "@/app/tasks/actions";
+import { TasksPageClient } from "./TasksPageClient";
+
+export const dynamic = "force-dynamic";
+
+export default async function TasksPage() {
+  const [tags, allTasks] = await Promise.all([getAllTags(), getTasks()]);
+  const now = new Date();
+  const upcoming = allTasks.filter(
+    (t) => !t.completedAt && new Date(t.scheduledAt) >= now
+  );
+  const past = allTasks.filter(
+    (t) => t.completedAt || new Date(t.scheduledAt) < now
+  );
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+          Tasks
+        </h1>
+        <p className="mt-1 text-neutral-600 dark:text-neutral-400">
+          Study sessions with date, time, and tags.
+        </p>
+      </div>
+
+      <TaskForm tagOptions={tags} />
+
+      <TasksPageClient
+        upcoming={upcoming}
+        past={past}
+        tags={tags}
+        onComplete={completeTaskAction}
+        onUncomplete={uncompleteTaskAction}
+        onDelete={deleteTaskAction}
+      />
+    </div>
+  );
+}
