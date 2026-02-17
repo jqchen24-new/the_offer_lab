@@ -2,6 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createTask } from "@/lib/tasks";
+import {
+  completeTask,
+  uncompleteTask,
+  deleteTask,
+} from "@/lib/tasks";
 
 export async function addSuggestedToTodayAction(formData: FormData): Promise<void> {
   const tagId = formData.get("tagId") as string;
@@ -23,4 +28,37 @@ export async function addSuggestedToTodayAction(formData: FormData): Promise<voi
   revalidatePath("/plan");
   revalidatePath("/tasks");
   revalidatePath("/progress");
+}
+
+export async function completeTaskFormAction(formData: FormData): Promise<void> {
+  const taskId = formData.get("taskId") as string;
+  if (taskId) {
+    await completeTask(taskId);
+    revalidatePath("/");
+    revalidatePath("/plan");
+    revalidatePath("/tasks");
+    revalidatePath("/progress");
+  }
+}
+
+export async function uncompleteTaskFormAction(formData: FormData): Promise<void> {
+  const taskId = formData.get("taskId") as string;
+  if (taskId) {
+    await uncompleteTask(taskId);
+    revalidatePath("/");
+    revalidatePath("/plan");
+    revalidatePath("/tasks");
+    revalidatePath("/progress");
+  }
+}
+
+export async function deleteTaskFormAction(formData: FormData): Promise<void> {
+  const taskId = formData.get("taskId") as string;
+  if (taskId) {
+    await deleteTask(taskId);
+    revalidatePath("/");
+    revalidatePath("/plan");
+    revalidatePath("/tasks");
+    revalidatePath("/progress");
+  }
 }

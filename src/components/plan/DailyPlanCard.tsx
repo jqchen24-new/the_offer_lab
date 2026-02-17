@@ -19,8 +19,9 @@ export function DailyPlanCard({
   onDelete: (id: string) => void;
 }) {
   const completed = !!task.completedAt;
-  const scheduled = new Date(task.scheduledAt);
-  const timeStr = scheduled.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const scheduled = task.scheduledAt ? new Date(task.scheduledAt) : new Date();
+  const timeStr = Number.isNaN(scheduled.getTime()) ? "–" : scheduled.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const tags = Array.isArray(task.tags) ? task.tags : [];
 
   return (
     <div
@@ -38,10 +39,10 @@ export function DailyPlanCard({
           {timeStr}
           {task.durationMinutes != null && ` · ${task.durationMinutes} min`}
         </p>
-        {task.tags.length > 0 && (
+        {tags.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-1">
-            {task.tags.map((tt) => (
-              <Badge key={tt.tag.id}>{tt.tag.name}</Badge>
+            {tags.map((tt, i) => (
+              <Badge key={tt.tagId ?? tt.tag?.id ?? `t-${i}`}>{tt.tag?.name ?? "?"}</Badge>
             ))}
           </div>
         )}

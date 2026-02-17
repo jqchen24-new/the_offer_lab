@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 
-export default function Error({
+export default function PlanError({
   error,
   reset,
 }: {
@@ -11,15 +11,15 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    console.error("[Plan page error]", error);
   }, [error]);
 
   return (
     <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 px-4">
-      <p className="text-center text-neutral-700 dark:text-neutral-300">
-        Something went wrong.
+      <p className="text-center font-medium text-neutral-800 dark:text-neutral-200">
+        Daily Plan failed to load
       </p>
-      <pre className="max-h-40 max-w-full overflow-auto rounded border border-neutral-200 bg-neutral-100 p-2 text-left text-xs text-neutral-800 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+      <pre className="max-h-48 max-w-full overflow-auto rounded border border-red-200 bg-red-50 p-3 text-left text-sm text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200">
         {error.message}
       </pre>
       <Button onClick={reset}>Try again</Button>
