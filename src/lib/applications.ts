@@ -14,13 +14,23 @@ export function isValidStatus(s: string): s is ApplicationStatus {
   return APPLICATION_STATUSES.includes(s as ApplicationStatus);
 }
 
-export async function getApplications(filters?: { status?: string }) {
+export type ApplicationSort = "applied" | "statusUpdated";
+
+export async function getApplications(filters?: {
+  status?: string;
+  sort?: ApplicationSort;
+}) {
   const status = filters?.status?.trim();
   const validStatus = status && isValidStatus(status) ? status : undefined;
   const where = validStatus ? { status: validStatus } : {};
+  const sort = filters?.sort === "statusUpdated" ? "statusUpdated" : "applied";
+  const orderBy =
+    sort === "statusUpdated"
+      ? [{ statusUpdatedAt: "desc" as const }, { appliedAt: "desc" as const }]
+      : { appliedAt: "desc" as const };
   return prisma.application.findMany({
     where,
-    orderBy: { appliedAt: "desc" },
+    orderBy,
   });
 }
 

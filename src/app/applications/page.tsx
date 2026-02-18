@@ -15,15 +15,21 @@ export const dynamic = "force-dynamic";
 export default async function ApplicationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string | string[] }>;
+  searchParams: Promise<{ status?: string | string[]; sort?: string | string[] }>;
 }) {
   const params = await searchParams;
-  const raw = params.status;
+  const rawStatus = params.status;
   const statusFilter =
-    typeof raw === "string" ? raw.trim() : Array.isArray(raw) ? raw[0]?.trim() ?? "" : "";
-  const applications = await getApplications(
-    statusFilter ? { status: statusFilter } : undefined
-  );
+    typeof rawStatus === "string" ? rawStatus.trim() : Array.isArray(rawStatus) ? rawStatus[0]?.trim() ?? "" : "";
+  const rawSort = params.sort;
+  const sortParam =
+    typeof rawSort === "string" ? rawSort.trim() : Array.isArray(rawSort) ? rawSort[0]?.trim() ?? "" : "";
+  const sort: "applied" | "statusUpdated" =
+    sortParam === "statusUpdated" ? "statusUpdated" : "applied";
+  const applications = await getApplications({
+    ...(statusFilter && { status: statusFilter }),
+    sort,
+  });
 
   const appliedAtDefault = new Date().toISOString().slice(0, 10);
 
@@ -107,7 +113,11 @@ export default async function ApplicationsPage({
       <Card>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <CardTitle className="mb-0">Applications</CardTitle>
-          <ApplicationsFilter key={statusFilter || "all"} currentStatus={statusFilter || ""} />
+          <ApplicationsFilter
+            key={`${statusFilter || "all"}-${sort}`}
+            currentStatus={statusFilter || ""}
+            currentSort={sort}
+          />
         </div>
         <ApplicationsList applications={applications} filterStatus={statusFilter || undefined} />
       </Card>
