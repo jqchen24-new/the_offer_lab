@@ -113,11 +113,20 @@ export default async function ApplicationsPage({
       <Card>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <CardTitle className="mb-0">Applications</CardTitle>
-          <ApplicationsFilter
+          <div className="flex flex-wrap items-center gap-3">
+            <ApplicationsFilter
             key={`${statusFilter || "all"}-${sort}`}
             currentStatus={statusFilter || ""}
             currentSort={sort}
           />
+            <Link
+              href="/api/applications/export"
+              download
+              className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+            >
+              Export CSV
+            </Link>
+          </div>
         </div>
         <ApplicationsList applications={applications} filterStatus={statusFilter || undefined} />
       </Card>
