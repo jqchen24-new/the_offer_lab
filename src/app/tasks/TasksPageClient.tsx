@@ -15,9 +15,8 @@ function dateKey(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-function isCompletedOnDate(task: Task, date: Date): boolean {
-  if (!task.completedAt) return false;
-  return dateKey(new Date(task.completedAt)) === dateKey(date);
+function isScheduledOnDate(task: Task, date: Date): boolean {
+  return dateKey(new Date(task.scheduledAt)) === dateKey(date);
 }
 
 export function TasksPageClient({
@@ -39,28 +38,37 @@ export function TasksPageClient({
   const [tagId, setTagId] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const datesWithCompletions = useMemo(() => {
+  const datesWithTasks = useMemo(() => {
     const keys = new Set<string>();
-    past.forEach((t) => {
-      if (t.completedAt) keys.add(dateKey(new Date(t.completedAt)));
+    [...upcoming, ...past].forEach((t) => {
+      keys.add(dateKey(new Date(t.scheduledAt)));
     });
     return Array.from(keys);
-  }, [past]);
+  }, [upcoming, past]);
 
   const filteredUpcoming =
     tagId === ""
       ? upcoming
       : upcoming.filter((t) => t.tags.some((tt) => tt.tagId === tagId));
-  let filteredPast =
+  const filteredPast =
     tagId === ""
       ? past
       : past.filter((t) => t.tags.some((tt) => tt.tagId === tagId));
-  if (filter === "past" && selectedDate) {
-    filteredPast = filteredPast.filter((t) =>
-      isCompletedOnDate(t, selectedDate)
-    );
-  }
-  const tasks = filter === "upcoming" ? filteredUpcoming : filteredPast;
+
+  const tasks = selectedDate
+    ? [...upcoming, ...past]
+        .filter((t) => isScheduledOnDate(t, selectedDate))
+        .filter((t) =>
+          tagId === "" ? true : t.tags.some((tt) => tt.tagId === tagId)
+        )
+        .sort(
+          (a, b) =>
+            new Date(a.scheduledAt).getTime() -
+            new Date(b.scheduledAt).getTime()
+        )
+    : filter === "upcoming"
+      ? filteredUpcoming
+      : filteredPast;
 
   return (
     <div className="space-y-4">
@@ -106,12 +114,12 @@ export function TasksPageClient({
         <TasksCalendar
           selectedDate={selectedDate}
           onSelectDate={setSelectedDate}
-          datesWithCompletions={datesWithCompletions}
+          datesWithTasks={datesWithTasks}
         />
       </div>
-      {filter === "past" && selectedDate && (
+      {selectedDate && (
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          Showing tasks completed on{" "}
+          Showing tasks scheduled for{" "}
           <strong>
             {selectedDate.toLocaleDateString("en-US", {
               weekday: "short",
