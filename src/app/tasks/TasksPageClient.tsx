@@ -34,7 +34,6 @@ export function TasksPageClient({
   onUncomplete: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
-  const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
   const [tagId, setTagId] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -66,38 +65,12 @@ export function TasksPageClient({
             new Date(a.scheduledAt).getTime() -
             new Date(b.scheduledAt).getTime()
         )
-    : filter === "upcoming"
-      ? filteredUpcoming
-      : filteredPast;
+    : [...filteredUpcoming, ...filteredPast];
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-start gap-4">
         <div className="flex flex-wrap items-center gap-4">
-          <div className="flex rounded-lg border border-neutral-200 dark:border-neutral-700 p-1">
-            <button
-              type="button"
-              onClick={() => setFilter("upcoming")}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                filter === "upcoming"
-                  ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                  : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-              }`}
-            >
-              Upcoming
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter("past")}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                filter === "past"
-                  ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                  : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-              }`}
-            >
-              Past
-            </button>
-          </div>
           <select
             value={tagId}
             onChange={(e) => setTagId(e.target.value)}
