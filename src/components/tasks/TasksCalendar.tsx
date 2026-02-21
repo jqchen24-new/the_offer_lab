@@ -34,11 +34,11 @@ function firstWeekday(d: Date): number {
 export function TasksCalendar({
   selectedDate,
   onSelectDate,
-  datesWithCompletions,
+  datesWithTasks,
 }: {
   selectedDate: Date | null;
   onSelectDate: (date: Date | null) => void;
-  datesWithCompletions: string[];
+  datesWithTasks: string[];
 }) {
   const [viewMonth, setViewMonth] = useState(() => {
     const d = selectedDate ? new Date(selectedDate) : new Date();
@@ -51,7 +51,7 @@ export function TasksCalendar({
   });
   const nDays = daysInMonth(viewMonth);
   const firstDay = firstWeekday(viewMonth);
-  const completionSet = new Set(datesWithCompletions);
+  const datesSet = new Set(datesWithTasks);
 
   const handleDayClick = (day: number) => {
     const d = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), day);
@@ -125,7 +125,7 @@ export function TasksCalendar({
             day
           );
           const key = dateKey(cellDate);
-          const hasCompletions = completionSet.has(key);
+          const hasTasks = datesSet.has(key);
           const isSelected =
             selectedDate !== null && isSameDay(cellDate, selectedDate);
           const isToday = isSameDay(cellDate, new Date());
@@ -139,7 +139,7 @@ export function TasksCalendar({
                   ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
                   : isToday
                     ? "bg-neutral-200 font-medium dark:bg-neutral-700"
-                    : hasCompletions
+                    : hasTasks
                       ? "text-neutral-900 hover:bg-neutral-100 dark:text-neutral-100 dark:hover:bg-neutral-800"
                       : "text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
               }`}

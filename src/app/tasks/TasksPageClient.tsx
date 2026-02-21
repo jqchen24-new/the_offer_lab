@@ -15,9 +15,8 @@ function dateKey(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-function isCompletedOnDate(task: Task, date: Date): boolean {
-  if (!task.completedAt) return false;
-  return dateKey(new Date(task.completedAt)) === dateKey(date);
+function isScheduledOnDate(task: Task, date: Date): boolean {
+  return dateKey(new Date(task.scheduledAt)) === dateKey(date);
 }
 
 export function TasksPageClient({
@@ -35,61 +34,43 @@ export function TasksPageClient({
   onUncomplete: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
-  const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
   const [tagId, setTagId] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const datesWithCompletions = useMemo(() => {
+  const datesWithTasks = useMemo(() => {
     const keys = new Set<string>();
-    past.forEach((t) => {
-      if (t.completedAt) keys.add(dateKey(new Date(t.completedAt)));
+    [...upcoming, ...past].forEach((t) => {
+      keys.add(dateKey(new Date(t.scheduledAt)));
     });
     return Array.from(keys);
-  }, [past]);
+  }, [upcoming, past]);
 
   const filteredUpcoming =
     tagId === ""
       ? upcoming
       : upcoming.filter((t) => t.tags.some((tt) => tt.tagId === tagId));
-  let filteredPast =
+  const filteredPast =
     tagId === ""
       ? past
       : past.filter((t) => t.tags.some((tt) => tt.tagId === tagId));
-  if (filter === "past" && selectedDate) {
-    filteredPast = filteredPast.filter((t) =>
-      isCompletedOnDate(t, selectedDate)
-    );
-  }
-  const tasks = filter === "upcoming" ? filteredUpcoming : filteredPast;
+
+  const tasks = selectedDate
+    ? [...upcoming, ...past]
+        .filter((t) => isScheduledOnDate(t, selectedDate))
+        .filter((t) =>
+          tagId === "" ? true : t.tags.some((tt) => tt.tagId === tagId)
+        )
+        .sort(
+          (a, b) =>
+            new Date(a.scheduledAt).getTime() -
+            new Date(b.scheduledAt).getTime()
+        )
+    : [...filteredUpcoming, ...filteredPast];
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-start gap-4">
         <div className="flex flex-wrap items-center gap-4">
-          <div className="flex rounded-lg border border-neutral-200 dark:border-neutral-700 p-1">
-            <button
-              type="button"
-              onClick={() => setFilter("upcoming")}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                filter === "upcoming"
-                  ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                  : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-              }`}
-            >
-              Upcoming
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter("past")}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                filter === "past"
-                  ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                  : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-              }`}
-            >
-              Past
-            </button>
-          </div>
           <select
             value={tagId}
             onChange={(e) => setTagId(e.target.value)}
@@ -106,12 +87,12 @@ export function TasksPageClient({
         <TasksCalendar
           selectedDate={selectedDate}
           onSelectDate={setSelectedDate}
-          datesWithCompletions={datesWithCompletions}
+          datesWithTasks={datesWithTasks}
         />
       </div>
-      {filter === "past" && selectedDate && (
+      {selectedDate && (
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          Showing tasks completed on{" "}
+          Showing tasks scheduled for{" "}
           <strong>
             {selectedDate.toLocaleDateString("en-US", {
               weekday: "short",
