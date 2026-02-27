@@ -8,6 +8,9 @@ export type ProfessionId =
   | "software_engineering"
   | "product"
   | "design"
+  | "marketing"
+  | "finance"
+  | "machine_learning"
   | "other";
 
 export interface ProfessionOption {
@@ -53,6 +56,31 @@ const DEFAULT_TAGS_BY_PROFESSION: Record<
     { name: "Behavioral", slug: "behavioral" },
     { name: "Other", slug: "other" },
   ],
+  marketing: [
+    { name: "Brand", slug: "brand" },
+    { name: "Growth", slug: "growth" },
+    { name: "Content", slug: "content" },
+    { name: "Analytics", slug: "analytics" },
+    { name: "Behavioral", slug: "behavioral" },
+    { name: "Other", slug: "other" },
+  ],
+  finance: [
+    { name: "Accounting", slug: "accounting" },
+    { name: "Valuation", slug: "valuation" },
+    { name: "Markets", slug: "markets" },
+    { name: "Technical", slug: "technical" },
+    { name: "Behavioral", slug: "behavioral" },
+    { name: "Other", slug: "other" },
+  ],
+  machine_learning: [
+    { name: "ML Fundamentals", slug: "ml-fundamentals" },
+    { name: "Deep Learning", slug: "deep-learning" },
+    { name: "Stats", slug: "stats" },
+    { name: "Python", slug: "python" },
+    { name: "System Design", slug: "system-design" },
+    { name: "Behavioral", slug: "behavioral" },
+    { name: "Other", slug: "other" },
+  ],
   other: [
     { name: "Technical", slug: "technical" },
     { name: "Behavioral", slug: "behavioral" },
@@ -81,6 +109,21 @@ const COPY_BY_PROFESSION: Record<ProfessionId, ProfessionCopy> = {
     description: "Track study sessions and prep for design interviews",
     navBrand: "The Offer Lab",
   },
+  marketing: {
+    titleSuffix: "Marketing",
+    description: "Track study sessions and prep for marketing interviews",
+    navBrand: "The Offer Lab",
+  },
+  finance: {
+    titleSuffix: "Finance",
+    description: "Track study sessions and prep for finance interviews",
+    navBrand: "The Offer Lab",
+  },
+  machine_learning: {
+    titleSuffix: "Machine Learning",
+    description: "Track study sessions and prep for ML interviews",
+    navBrand: "The Offer Lab",
+  },
   other: {
     titleSuffix: "Interview Prep",
     description: "Track study sessions and interview prep",
@@ -93,6 +136,9 @@ export const PROFESSION_OPTIONS: ProfessionOption[] = [
   { id: "software_engineering", label: "Software Engineering" },
   { id: "product", label: "Product" },
   { id: "design", label: "Design" },
+  { id: "marketing", label: "Marketing" },
+  { id: "finance", label: "Finance" },
+  { id: "machine_learning", label: "Machine Learning" },
   { id: "other", label: "Other" },
 ];
 
@@ -113,6 +159,9 @@ export function resolveProfession(profession: string | null | undefined): Profes
     profession === "software_engineering" ||
     profession === "product" ||
     profession === "design" ||
+    profession === "marketing" ||
+    profession === "finance" ||
+    profession === "machine_learning" ||
     profession === "other"
   ) {
     return profession;
