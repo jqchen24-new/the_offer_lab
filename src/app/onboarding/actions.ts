@@ -7,14 +7,15 @@ import { prisma } from "@/lib/db";
 import { ensureDefaultTagsForUser } from "@/lib/tags";
 import { isProfessionId } from "@/lib/profession-config";
 
-export async function setProfessionAction(formData: FormData) {
+export async function setProfessionAction(formData: FormData): Promise<void> {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) redirect("/signin");
 
   const professionId = formData.get("profession") as string;
   if (!professionId || !isProfessionId(professionId)) {
-    return { error: "Please choose a track" };
+    redirect("/onboarding?error=" + encodeURIComponent("Please choose a track"));
+    return;
   }
 
   await prisma.user.update({

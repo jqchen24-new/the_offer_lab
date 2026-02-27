@@ -6,13 +6,19 @@ import { Button } from "@/components/ui/Button";
 
 export const dynamic = "force-dynamic";
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const session = await auth();
   if (!session?.user) redirect("/signin");
 
   if (session.user.profession) {
     redirect("/dashboard");
   }
+
+  const { error } = await searchParams;
 
   return (
     <div className="mx-auto max-w-lg space-y-8 px-4 py-12">
@@ -24,6 +30,12 @@ export default async function OnboardingPage() {
           What are you prepping for? We’ll set up default tags for you.
         </p>
       </div>
+
+      {error && (
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200">
+          {error}
+        </p>
+      )}
 
       <form action={setProfessionAction} className="space-y-4">
         <div className="grid gap-2">
