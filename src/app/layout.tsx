@@ -18,15 +18,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
   return (
     <html lang="en">
       <body className="min-h-screen antialiased">
-        <SessionProvider>
+        <SessionProvider session={session}>
           <OnboardingGate>
             <Nav />
             <div className="flex min-h-screen flex-col">
