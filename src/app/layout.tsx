@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
 import { auth } from "@/lib/auth";
 import { resolveProfession, getCopyForProfession } from "@/lib/profession-config";
 import { Nav } from "@/components/layout/Nav";
@@ -36,6 +37,7 @@ export default async function RootLayout({
             </div>
           </OnboardingGate>
         </SessionProvider>
+        <Analytics />
       </body>
     </html>
   );
