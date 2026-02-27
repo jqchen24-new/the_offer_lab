@@ -39,7 +39,12 @@ export async function addDefaultTagsAction() {
     return { error: "Set your track first, then add default tags" };
   }
 
-  await ensureDefaultTagsForUser(userId, profession);
+  try {
+    await ensureDefaultTagsForUser(userId, profession);
+  } catch (e) {
+    console.error("[settings] ensureDefaultTagsForUser failed:", e);
+    return { error: "Failed to add default tags. Try again." };
+  }
   revalidatePath("/tags");
   revalidatePath("/plan");
   revalidatePath("/tasks");
