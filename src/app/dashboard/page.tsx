@@ -76,6 +76,9 @@ export default async function DashboardPage() {
         <p className="mt-1 text-neutral-600 dark:text-neutral-400">
           Today&apos;s plan and your progress at a glance.
         </p>
+        <p className="mt-3 max-w-2xl text-sm text-neutral-500 dark:text-neutral-400">
+          The Offer Lab helps you track study sessions, plan your day, and manage job applications—so you can stay on top of your interview prep.
+        </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
