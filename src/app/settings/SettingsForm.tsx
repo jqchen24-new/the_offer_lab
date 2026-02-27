@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useFormState } from "react-dom";
 import { updateProfessionAction } from "./actions";
 import { Button } from "@/components/ui/Button";
@@ -17,8 +18,13 @@ export function SettingsForm({
   updateAction: (formData: FormData) => Promise<{ error: string | null }>;
   addDefaultTagsAction: () => Promise<{ error: string | null }>;
 }) {
+  const router = useRouter();
   const [state, formAction] = useFormState(
-    async (_: { error: string | null }, formData: FormData) => updateAction(formData),
+    async (prev: { error: string | null }, formData: FormData) => {
+      const result = await updateAction(formData);
+      if (result.error === null) router.refresh();
+      return result;
+    },
     { error: null as string | null }
   );
 
@@ -35,7 +41,7 @@ export function SettingsForm({
 
   return (
     <div className="space-y-4">
-      <form action={formAction} className="space-y-3">
+      <form key={currentProfession} action={formAction} className="space-y-3">
         <select
           name="profession"
           defaultValue={currentProfession || undefined}
