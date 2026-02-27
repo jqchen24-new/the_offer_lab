@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { addSuggestedToTodayAction } from "@/app/plan/actions";
 import type { SuggestedItem } from "@/lib/tasks";
 import { Button } from "@/components/ui/Button";
@@ -6,9 +7,16 @@ export function SuggestedPlan({ items = [] }: { items?: SuggestedItem[] }) {
   const list = Array.isArray(items) ? items : [];
   if (list.length === 0) {
     return (
-      <p className="text-sm text-neutral-500 dark:text-neutral-400">
-        No suggestions right now. Add tags and complete some sessions to get suggestions.
-      </p>
+      <div className="space-y-2">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          No suggestions right now. Add tags and complete some sessions to get suggestions.
+        </p>
+        <Link href="/tags">
+          <Button type="button" variant="secondary" className="text-sm">
+            Go to Tags to add tags
+          </Button>
+        </Link>
+      </div>
     );
   }
 
