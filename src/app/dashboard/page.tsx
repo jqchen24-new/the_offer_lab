@@ -34,15 +34,11 @@ export default async function DashboardPage() {
     );
   }
 
-  let todayTasks: Awaited<ReturnType<typeof getTasksForTodayDashboard>> = [];
   let stats: Awaited<ReturnType<typeof getProgressStats>> | null = null;
   let loadError: string | null = null;
 
   try {
-    [todayTasks, stats] = await Promise.all([
-      getTasksForTodayDashboard(userId),
-      getProgressStats(userId),
-    ]);
+    stats = await getProgressStats(userId);
   } catch (e) {
     loadError = e instanceof Error ? e.message : "Failed to load dashboard data";
   }
