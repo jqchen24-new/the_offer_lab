@@ -13,6 +13,7 @@ export async function auth() {
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
@@ -50,11 +51,18 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = (token.id ?? token.sub) as string;
-        const dbUser = await prisma.user.findUnique({
-          where: { id: session.user.id },
-          select: { profession: true },
-        });
-        session.user.profession = dbUser?.profession ?? null;
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { profession: true },
+          });
+          session.user.profession = dbUser?.profession ?? null;
+        } catch (err) {
+          if (process.env.NODE_ENV === "development") {
+            console.error("[NextAuth] session callback DB error:", err);
+          }
+          throw err;
+        }
       }
       return session;
     },

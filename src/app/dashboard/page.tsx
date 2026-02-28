@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { getTasksForDate } from "@/lib/tasks";
+import { getTasksForTodayDashboard } from "@/lib/tasks";
 import { getProgressStats } from "@/lib/progress";
 import { DashboardTodayCard } from "@/components/dashboard/DashboardTodayCard";
 import { DashboardProgressCard } from "@/components/dashboard/DashboardProgressCard";
@@ -35,14 +35,13 @@ export default async function DashboardPage() {
     );
   }
 
-  let todayTasks: Awaited<ReturnType<typeof getTasksForDate>> = [];
+  let todayTasks: Awaited<ReturnType<typeof getTasksForTodayDashboard>> = [];
   let stats: Awaited<ReturnType<typeof getProgressStats>> | null = null;
   let loadError: string | null = null;
 
   try {
-    const today = new Date();
     [todayTasks, stats] = await Promise.all([
-      getTasksForDate(userId, today),
+      getTasksForTodayDashboard(userId),
       getProgressStats(userId),
     ]);
   } catch (e) {
