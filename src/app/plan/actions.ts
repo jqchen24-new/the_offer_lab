@@ -12,16 +12,23 @@ export async function addSuggestedToTodayAction(formData: FormData): Promise<voi
   const tagId = formData.get("tagId") as string;
   const tagName = formData.get("tagName") as string;
   const suggestedMinutes = parseInt(formData.get("suggestedMinutes") as string, 10) || 30;
+  const forDateStr = formData.get("forDate") as string | null;
 
   if (!tagId || !tagName) return;
 
-  const today = new Date();
-  today.setHours(12, 0, 0, 0);
+  let scheduledAt: Date;
+  if (forDateStr && /^\d{4}-\d{2}-\d{2}$/.test(forDateStr)) {
+    scheduledAt = new Date(`${forDateStr}T12:00:00.000Z`);
+  } else {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    scheduledAt = today;
+  }
 
   await createTask(session.user.id, {
     title: tagName,
     durationMinutes: suggestedMinutes,
-    scheduledAt: today,
+    scheduledAt,
     tagIds: [tagId],
   });
   revalidatePath("/");

@@ -1,10 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import { addSuggestedToTodayAction } from "@/app/plan/actions";
 import type { SuggestedItem } from "@/lib/tasks";
 import { Button } from "@/components/ui/Button";
 
+function getLocalDateString(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 export function SuggestedPlan({ items = [] }: { items?: SuggestedItem[] }) {
   const list = Array.isArray(items) ? items : [];
+  const forDate = getLocalDateString();
   if (list.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-neutral-200 bg-neutral-50/50 px-4 py-6 dark:border-neutral-700 dark:bg-neutral-800/30">
@@ -34,6 +45,7 @@ export function SuggestedPlan({ items = [] }: { items?: SuggestedItem[] }) {
               <input type="hidden" name="tagId" value={item.tagId} />
               <input type="hidden" name="tagName" value={item.tagName} />
               <input type="hidden" name="suggestedMinutes" value={item.suggestedMinutes} />
+              <input type="hidden" name="forDate" value={forDate} />
               <span className="text-neutral-700 dark:text-neutral-300">
                 {item.suggestedMinutes} min <strong>{item.tagName}</strong>
               </span>

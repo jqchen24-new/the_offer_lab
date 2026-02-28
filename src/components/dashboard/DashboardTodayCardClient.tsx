@@ -14,13 +14,27 @@ function getLocalTodayRange(): { startIso: string; endIso: string } {
   return { startIso: start.toISOString(), endIso: end.toISOString() };
 }
 
-export function DashboardTodayCardClient() {
+export function DashboardTodayCardClient({
+  serverTodayStartIso,
+  serverTodayEndIso,
+}: {
+  serverTodayStartIso: string;
+  serverTodayEndIso: string;
+}) {
   const [tasks, setTasks] = useState<TodayTask[] | null>(null);
 
   useEffect(() => {
     const { startIso, endIso } = getLocalTodayRange();
-    getTodayTasksForRange(startIso, endIso).then(setTasks);
-  }, []);
+    Promise.all([
+      getTodayTasksForRange(startIso, endIso),
+      getTodayTasksForRange(serverTodayStartIso, serverTodayEndIso),
+    ]).then(([clientTasks, serverTasks]) => {
+      const byId = new Map<string, TodayTask>();
+      for (const t of clientTasks) byId.set(t.id, t);
+      for (const t of serverTasks) byId.set(t.id, t);
+      setTasks(Array.from(byId.values()));
+    });
+  }, [serverTodayStartIso, serverTodayEndIso]);
 
   if (tasks === null) {
     return (

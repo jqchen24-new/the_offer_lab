@@ -61,6 +61,12 @@ export default async function DashboardPage() {
     );
   }
 
+  const serverToday = new Date();
+  const serverStart = new Date(serverToday);
+  serverStart.setHours(0, 0, 0, 0);
+  const serverEnd = new Date(serverToday);
+  serverEnd.setHours(23, 59, 59, 999);
+
   return (
     <div className="space-y-8">
       <div>
@@ -76,7 +82,10 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <DashboardTodayCardClient />
+        <DashboardTodayCardClient
+          serverTodayStartIso={serverStart.toISOString()}
+          serverTodayEndIso={serverEnd.toISOString()}
+        />
         <DashboardProgressCard
           weekMinutes={stats.weekMinutes}
           lastWeekMinutes={stats.lastWeekMinutes}
