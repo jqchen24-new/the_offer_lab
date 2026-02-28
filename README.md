@@ -54,6 +54,21 @@ Web app to track study sessions, daily plans, and progress for interview prep. B
 
    Open [http://localhost:3000](http://localhost:3000). The root redirects to `/dashboard` (or `/onboarding` for new users).
 
+### Troubleshooting local
+
+- **Sign-in fails with "Error code: Callback"** or **Prisma error: "the URL must start with the protocol \`file:\`"**  
+  This usually means the generated Prisma client or Next.js cache is out of sync with your schema or env (e.g. you switched to PostgreSQL but an old SQLite client is still cached). Fix:
+
+  ```bash
+  npx prisma generate
+  rm -rf .next
+  npm run dev
+  ```
+
+  Or use one command: **`npm run dev:fresh`** (runs `prisma generate`, clears `.next`, then starts the dev server).
+
+- **Google sign-in** – In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), add `http://localhost:3000/api/auth/callback/google` to your OAuth client’s **Authorized redirect URIs** and `http://localhost:3000` to **Authorized JavaScript origins**.
+
 ## Production
 
 - **Hosting** – Deploy to [Vercel](https://vercel.com) (or similar). Connect your repo and set the same env vars; set `NEXTAUTH_URL` to your production URL.
@@ -61,10 +76,11 @@ Web app to track study sessions, daily plans, and progress for interview prep. B
 
 ## Scripts
 
-| Command                  | Description                    |
-|--------------------------|--------------------------------|
-| `npm run dev`            | Start Next.js dev server       |
-| `npm run build`          | Production build               |
+| Command                  | Description                                            |
+|--------------------------|--------------------------------------------------------|
+| `npm run dev`            | Start Next.js dev server                               |
+| `npm run dev:fresh`      | Regenerate Prisma client, clear `.next`, then start dev (use if sign-in or DB errors) |
+| `npm run build`          | Production build                                       |
 | `npm run start`          | Start production server        |
 | `npm run lint`           | Run ESLint                     |
 | `npx prisma migrate dev` | Create/apply migrations (dev)  |
