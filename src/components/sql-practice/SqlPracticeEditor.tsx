@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Editor } from "@uiw/react-codemirror";
+import CodeMirror from "@uiw/react-codemirror";
 import { sql } from "@codemirror/lang-sql";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -186,7 +186,7 @@ export function SqlPracticeEditor({
           <h2 className="border-b border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
             Your solution
           </h2>
-          <Editor
+          <CodeMirror
             value={code}
             height="200px"
             extensions={[sql()]}
