@@ -1,5 +1,6 @@
 "use server";
 
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -30,7 +31,7 @@ export async function submitAttemptAction(
       questionId,
       submittedSql: submittedSql.trim(),
       passed,
-      runResult: runResult ?? undefined,
+      runResult: runResult != null ? (runResult as Prisma.InputJsonValue) : undefined,
     },
   });
   return { ok: true, attemptId: attempt.id };
