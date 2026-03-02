@@ -424,69 +424,64 @@ export function SqlPracticeEditor({
                   </span>
                 )}
               </div>
-              <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:leading-relaxed prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-strong:text-neutral-900 dark:prose-strong:text-white prose-code:rounded prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-medium prose-code:text-neutral-800 dark:prose-code:bg-neutral-800 dark:prose-code:text-neutral-200 prose-table:border-collapse prose-th:border prose-th:border-neutral-200 prose-th:bg-neutral-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-sm prose-th:font-semibold prose-th:text-neutral-700 dark:prose-th:border-neutral-700 dark:prose-th:bg-neutral-800 dark:prose-th:text-neutral-300 prose-td:border prose-td:border-neutral-200 prose-td:px-3 prose-td:py-1.5 prose-td:text-sm prose-td:text-neutral-600 dark:prose-td:border-neutral-700 dark:prose-td:text-neutral-400 prose-li:text-neutral-700 dark:prose-li:text-neutral-300">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:leading-relaxed prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-strong:text-neutral-900 dark:prose-strong:text-white prose-code:rounded prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-medium prose-code:text-neutral-800 dark:prose-code:bg-neutral-800 dark:prose-code:text-neutral-200 prose-li:text-neutral-700 dark:prose-li:text-neutral-300">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    table: ({ children }) => (
+                      <div className="my-3 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
+                        <table className="w-full border-collapse text-left text-sm">{children}</table>
+                      </div>
+                    ),
+                    thead: ({ children }) => (
+                      <thead className="bg-neutral-50 dark:bg-neutral-800">{children}</thead>
+                    ),
+                    th: ({ children }) => (
+                      <th className="border-b border-neutral-200 px-3 py-2 text-xs font-semibold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
+                        {children}
+                      </th>
+                    ),
+                    td: ({ children }) => (
+                      <td className="border-b border-neutral-100 px-3 py-1.5 font-mono text-xs text-neutral-600 last:border-0 dark:border-neutral-700 dark:text-neutral-400">
+                        {children}
+                      </td>
+                    ),
+                    tr: ({ children }) => (
+                      <tr className="last:border-0">{children}</tr>
+                    ),
+                  }}
+                >
                   {problemStatement}
                 </ReactMarkdown>
               </div>
-              {Array.isArray(expectedResult) && expectedResult.length >= 0 && (
+              {Array.isArray(expectedResult) && expectedResult.length > 0 && (
                 <div className="space-y-3 border-t border-neutral-200 pt-5 dark:border-neutral-700">
                   <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
                     Expected Output
                   </h3>
                   <p className="text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
-                    Your query must return a table with exactly these columns and row(s). Column order and row order are ignored when checking; only the set of rows must match.
+                    Your query must return a table with exactly these columns. Column order and row order are ignored when checking; only the set of rows must match.
                   </p>
-                  {expectedResult.length > 0 ? (
-                    (() => {
-                      const first = expectedResult[0];
-                      const expKeys =
-                        first !== null && typeof first === "object" && Object.keys(first).length > 0
-                          ? Object.keys(first)
-                          : ["(no columns)"];
-                      return (
-                        <div className="overflow-hidden rounded border border-neutral-200 dark:border-neutral-700">
-                          <table className="w-full text-left text-sm">
-                            <thead>
-                              <tr className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800">
-                                {expKeys.map((col) => (
-                                  <th
-                                    key={String(col)}
-                                    className="px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300"
-                                  >
-                                    {String(col)}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {expectedResult.map((row, i) => (
-                                <tr
-                                  key={i}
-                                  className="border-b border-neutral-100 last:border-0 dark:border-neutral-700"
-                                >
-                                  {expKeys.map((k) => (
-                                    <td
-                                      key={String(k)}
-                                      className="px-3 py-2 font-mono text-neutral-600 dark:text-neutral-400"
-                                    >
-                                      {row !== null && typeof row === "object" && k in row
-                                        ? String((row as Record<string, unknown>)[k])
-                                        : "\u00a0"}
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      );
-                    })()
-                  ) : (
-                    <p className="rounded border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
-                      (empty result — 0 rows)
-                    </p>
-                  )}
+                  {(() => {
+                    const first = expectedResult[0];
+                    const expKeys =
+                      first !== null && typeof first === "object" && Object.keys(first).length > 0
+                        ? Object.keys(first)
+                        : [];
+                    if (expKeys.length === 0) return null;
+                    return (
+                      <div className="flex flex-wrap gap-2">
+                        {expKeys.map((col) => (
+                          <span
+                            key={col}
+                            className="rounded-md border border-neutral-200 bg-neutral-50 px-3 py-1.5 font-mono text-xs font-medium text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+                          >
+                            {col}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
               {schemaTables.length > 0 && (
