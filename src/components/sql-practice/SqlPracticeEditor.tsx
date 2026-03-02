@@ -624,16 +624,22 @@ export function SqlPracticeEditor({
                                 (_, i) => `Column ${i + 1}`
                               );
                         }
+                        const isGenericKeys = keys.length > 0 && keys.every((k, i) => k === `Column ${i + 1}`);
+                        const schemaNames =
+                          isGenericKeys && schemaTables.length > 0
+                            ? schemaTables.find((t) => t.columns.length === keys.length)?.columns.map((c) => c.name)
+                            : null;
+                        const headerLabels = schemaNames && schemaNames.length === keys.length ? schemaNames : keys;
                         return (
                           <table className="w-full min-w-[200px] table-auto border-collapse text-left text-sm">
                             <thead className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-800">
                               <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                                {keys.map((k) => (
+                                {keys.map((k, idx) => (
                                   <th
                                     key={String(k)}
                                     className="border-b border-neutral-200 px-3 py-2 font-medium text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
                                   >
-                                    {String(k) || "\u00a0"}
+                                    {(headerLabels[idx] ?? String(k)) || "\u00a0"}
                                   </th>
                                 ))}
                               </tr>
