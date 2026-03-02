@@ -365,8 +365,8 @@ export function SqlPracticeEditor({
       </div>
 
       {/* Right panel: code + results */}
-      <div className="flex min-w-0 flex-[1.2] flex-col bg-neutral-50 dark:bg-neutral-950">
-        <div className="flex items-center gap-2 border-b border-neutral-200 px-3 py-2 dark:border-neutral-800">
+      <div className="flex min-w-0 flex-[1.2] flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
+        <div className="flex shrink-0 items-center gap-2 border-b border-neutral-200 px-3 py-2 dark:border-neutral-800">
           <Link
             href="/sql-practice"
             className="rounded p-1 text-neutral-600 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-white"
@@ -383,17 +383,17 @@ export function SqlPracticeEditor({
             SQLite
           </span>
         </div>
-        <div className="min-h-0 flex-1">
+        <div className="shrink-0">
           <CodeMirror
             value={code}
-            height="320px"
+            height="280px"
             extensions={[sql()]}
             onChange={setCode}
             basicSetup={{ lineNumbers: true }}
             className="text-sm [&_.cm-editor]:outline-none"
           />
         </div>
-        <div className="flex items-center gap-2 border-t border-neutral-200 px-3 py-2 dark:border-neutral-800">
+        <div className="flex shrink-0 items-center gap-2 border-t border-neutral-200 px-3 py-2 dark:border-neutral-800">
           <Button
             type="button"
             variant="secondary"
