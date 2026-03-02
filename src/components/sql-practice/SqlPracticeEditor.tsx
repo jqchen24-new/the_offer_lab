@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import Link from "next/link";
 import CodeMirror from "@uiw/react-codemirror";
 import { sql } from "@codemirror/lang-sql";
 import ReactMarkdown from "react-markdown";
@@ -38,20 +39,31 @@ function parseSchema(schemaSql: string): TableSchema[] {
 
 type SqlPracticeEditorProps = {
   questionId: string;
+  title: string;
+  difficulty?: string;
   problemStatement: string;
   schemaSql: string;
   seedSql: string;
   expectedResult: Record<string, unknown>[];
 };
 
+const LEFT_TABS = ["Description", "Accepted", "Editorial", "Solutions", "Submissions"] as const;
+type LeftTab = (typeof LEFT_TABS)[number];
+
+type ResultTab = "testcase" | "result";
+
 export function SqlPracticeEditor({
   questionId,
+  title,
+  difficulty,
   problemStatement,
   schemaSql,
   seedSql,
   expectedResult,
 }: SqlPracticeEditorProps) {
   const [code, setCode] = useState("-- Write your SQL here\nSELECT 1;");
+  const [leftTab, setLeftTab] = useState<LeftTab>("Description");
+  const [resultTab, setResultTab] = useState<ResultTab>("testcase");
   const [runOutput, setRunOutput] = useState<{
     type: "result" | "error";
     message?: string;
@@ -65,17 +77,75 @@ export function SqlPracticeEditor({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [sampleData, setSampleData] = useState<Record<string, Record<string, unknown>[]>>({});
 
   const schemaTables = useMemo(() => parseSchema(schemaSql), [schemaSql]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (schemaTables.length === 0) return;
+      try {
+        const initSqlJs = (await import("sql.js")).default;
+        const SQL = await initSqlJs({
+          locateFile: (file: string) =>
+            typeof window !== "undefined"
+              ? `https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/${file}`
+              : `/${file}`,
+        });
+        const db = new SQL.Database();
+        try {
+          db.exec(schemaSql);
+          db.exec(seedSql);
+          const data: Record<string, Record<string, unknown>[]> = {};
+          for (const { tableName } of schemaTables) {
+            try {
+              const execResult = db.exec(`SELECT * FROM ${tableName}`);
+              if (execResult.length > 0) {
+                const { columns, values } = execResult[0];
+                data[tableName] = values.map((row) => {
+                  const obj: Record<string, unknown> = {};
+                  columns.forEach((col, i) => {
+                    obj[col] = row[i];
+                  });
+                  return obj;
+                });
+              } else {
+                data[tableName] = [];
+              }
+            } catch {
+              data[tableName] = [];
+            }
+          }
+          if (!cancelled) setSampleData(data);
+        } finally {
+          try {
+            db.close?.();
+          } catch {
+            // ignore
+          }
+        }
+      } catch {
+        // ignore sample load errors
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [schemaSql, seedSql, schemaTables]);
 
   const runSql = useCallback(async () => {
     setRunOutput(null);
     setSubmitState(null);
+    setResultTab("result");
     setLoading(true);
     try {
       const initSqlJs = (await import("sql.js")).default;
       const SQL = await initSqlJs({
-        locateFile: (file: string) => `/${file}`,
+        locateFile: (file: string) =>
+          typeof window !== "undefined"
+            ? `https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/${file}`
+            : `/${file}`,
       });
       const db = new SQL.Database();
       try {
@@ -117,11 +187,15 @@ export function SqlPracticeEditor({
   const handleSubmit = useCallback(async () => {
     setSubmitState(null);
     setRunOutput(null);
+    setResultTab("result");
     setLoading(true);
     try {
       const initSqlJs = (await import("sql.js")).default;
       const SQL = await initSqlJs({
-        locateFile: (file: string) => `/${file}`,
+        locateFile: (file: string) =>
+          typeof window !== "undefined"
+            ? `https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/${file}`
+            : `/${file}`,
       });
       const db = new SQL.Database();
       let actualRows: Record<string, unknown>[] = [];
@@ -197,188 +271,326 @@ export function SqlPracticeEditor({
   }, [submitState?.attemptId]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr,1.2fr]">
-      <div className="space-y-4">
-        <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
-          <h2 className="mb-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-            Problem
-          </h2>
-          <div className="prose prose-sm max-w-none dark:prose-invert prose-p:text-neutral-600 prose-p:dark:text-neutral-400">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {problemStatement}
-            </ReactMarkdown>
-          </div>
-        </div>
-
-        {schemaTables.length > 0 && (
-          <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
-            <h2 className="mb-3 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-              Schema
-            </h2>
-            <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
-              Table names and columns you can use in your query.
-            </p>
-            <div className="space-y-4">
-              {schemaTables.map(({ tableName, columns }) => (
-                <div
-                  key={tableName}
-                  className="rounded-md border border-neutral-100 bg-neutral-50/80 dark:border-neutral-700 dark:bg-neutral-800/80"
-                >
-                  <div className="border-b border-neutral-200 px-3 py-2 font-mono text-sm font-medium text-neutral-900 dark:border-neutral-700 dark:text-white">
-                    {tableName}
-                  </div>
-                  <ul className="list-none px-3 py-2">
-                    {columns.map((col) => (
-                      <li
-                        key={col.name}
-                        className="flex items-baseline gap-2 border-b border-neutral-100 last:border-0 dark:border-neutral-700/80 py-1.5 text-sm"
-                      >
-                        <span className="font-mono font-medium text-neutral-800 dark:text-neutral-200">
-                          {col.name}
-                        </span>
-                        {col.type && (
-                          <span className="font-mono text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                            {col.type}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-      <div className="space-y-4">
-        <div className="rounded-lg border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
-          <h2 className="border-b border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-            Your solution
-          </h2>
-          <div className="min-h-[380px]">
-            <CodeMirror
-              value={code}
-              height="380px"
-              extensions={[sql()]}
-              onChange={setCode}
-              basicSetup={{ lineNumbers: true }}
-              className="rounded-b-lg border-0 text-sm [&_.cm-editor]:outline-none [&_.cm-scroller]:min-h-[380px]"
-            />
-          </div>
-          <div className="flex gap-2 border-t border-neutral-200 p-3 dark:border-neutral-700">
-            <Button
+    <>
+      {/* Left panel: problem & schema */}
+      <div className="flex min-w-0 flex-1 flex-col border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="flex border-b border-neutral-200 dark:border-neutral-800">
+          {LEFT_TABS.map((tab) => (
+            <button
+              key={tab}
               type="button"
-              variant="secondary"
-              onClick={runSql}
-              disabled={loading}
-            >
-              {loading ? "Running…" : "Run"}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? "Submitting…" : "Submit"}
-            </Button>
-          </div>
-        </div>
-        {runOutput && (
-          <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
-            <h2 className="mb-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-              Result
-            </h2>
-            {runOutput.type === "error" ? (
-              <p className="text-sm text-red-600 dark:text-red-400">
-                {runOutput.message}
-              </p>
-            ) : runOutput.rows && runOutput.rows.length > 0 ? (
-              <div className="max-h-[320px] overflow-auto rounded border border-neutral-100 dark:border-neutral-700">
-                <table className="w-full text-left text-sm">
-                  <thead className="sticky top-0 bg-neutral-50 dark:bg-neutral-800/95">
-                    <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                      {Object.keys(runOutput.rows[0]).map((k) => (
-                        <th
-                          key={k}
-                          className="px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300"
-                        >
-                          {k}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {runOutput.rows.map((row, i) => (
-                      <tr
-                        key={i}
-                        className="border-b border-neutral-100 dark:border-neutral-800"
-                      >
-                        {Object.values(row).map((v, j) => (
-                          <td
-                            key={j}
-                            className="px-3 py-2 font-mono text-neutral-600 dark:text-neutral-400"
-                          >
-                            {String(v)}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                No rows returned.
-              </p>
-            )}
-          </div>
-        )}
-        {submitState && (
-          <div
-            className={`rounded-lg border p-4 ${
-              submitState.passed
-                ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30"
-                : "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30"
-            }`}
-          >
-            <p
-              className={`font-medium ${
-                submitState.passed
-                  ? "text-emerald-800 dark:text-emerald-200"
-                  : "text-amber-800 dark:text-amber-200"
+              onClick={() => setLeftTab(tab)}
+              className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                leftTab === tab
+                  ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+                  : "border-transparent text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
               }`}
             >
-              {submitState.passed ? "Correct!" : "Incorrect"}
+              {tab}
+            </button>
+          ))}
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          {leftTab === "Description" && (
+            <div className="space-y-4">
+              <h1 className="text-xl font-semibold text-neutral-900 dark:text-white">
+                {title}
+              </h1>
+              {difficulty && (
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded bg-neutral-200 px-2 py-0.5 text-xs font-medium text-neutral-700 dark:bg-neutral-600 dark:text-neutral-200">
+                    {difficulty}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400">
+                <span className="font-medium text-blue-600 dark:text-blue-400">SQL Schema</span>
+                <span className="text-neutral-400 dark:text-neutral-500">&gt;</span>
+                <span>Pandas Schema</span>
+                <span className="text-neutral-400 dark:text-neutral-500">&gt;</span>
+              </div>
+              <div className="prose prose-sm max-w-none dark:prose-invert prose-p:text-neutral-600 prose-p:dark:text-neutral-400">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {problemStatement}
+                </ReactMarkdown>
+              </div>
+              {schemaTables.length > 0 && (
+                <div className="space-y-4">
+                  {schemaTables.map(({ tableName, columns }) => (
+                    <div key={tableName}>
+                      <p className="mb-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        Table: {tableName}
+                      </p>
+                      <div className="overflow-hidden rounded border border-neutral-200 dark:border-neutral-700">
+                        <table className="w-full text-left text-sm">
+                          <thead>
+                            <tr className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800">
+                              <th className="px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300">
+                                Column Name
+                              </th>
+                              <th className="px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300">
+                                Type
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {columns.map((col) => (
+                              <tr
+                                key={col.name}
+                                className="border-b border-neutral-100 last:border-0 dark:border-neutral-700"
+                              >
+                                <td className="font-mono px-3 py-2 text-neutral-800 dark:text-neutral-200">
+                                  {col.name}
+                                </td>
+                                <td className="font-mono px-3 py-2 text-neutral-600 dark:text-neutral-400">
+                                  {col.type ?? "—"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          {leftTab !== "Description" && (
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              Coming soon.
             </p>
-            {submitState.message && (
-              <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-                {submitState.message}
-              </p>
-            )}
-            {submitState.attemptId && (
-              <Button
-                type="button"
-                variant="ghost"
-                className="mt-2"
-                onClick={handleRequestFeedback}
-                disabled={feedbackLoading}
-              >
-                {feedbackLoading ? "Loading…" : "Get AI feedback"}
-              </Button>
-            )}
-          </div>
-        )}
-        {feedback && (
-          <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
-            <h2 className="mb-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-              AI feedback
-            </h2>
-            <p className="whitespace-pre-wrap text-sm text-neutral-600 dark:text-neutral-400">
-              {feedback}
-            </p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* Right panel: code + results */}
+      <div className="flex min-w-0 flex-[1.2] flex-col bg-neutral-50 dark:bg-neutral-950">
+        <div className="flex items-center gap-2 border-b border-neutral-200 px-3 py-2 dark:border-neutral-800">
+          <Link
+            href="/sql-practice"
+            className="rounded p-1 text-neutral-600 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-white"
+            aria-label="Back to SQL Practice"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </Link>
+          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            &lt;/&gt; Code
+          </span>
+          <span className="ml-2 rounded bg-neutral-200 px-2 py-0.5 text-xs font-mono text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200">
+            SQLite
+          </span>
+        </div>
+        <div className="min-h-0 flex-1">
+          <CodeMirror
+            value={code}
+            height="320px"
+            extensions={[sql()]}
+            onChange={setCode}
+            basicSetup={{ lineNumbers: true }}
+            className="text-sm [&_.cm-editor]:outline-none"
+          />
+        </div>
+        <div className="flex items-center gap-2 border-t border-neutral-200 px-3 py-2 dark:border-neutral-800">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={runSql}
+            disabled={loading}
+          >
+            {loading ? "Running…" : "Run"}
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? "Submitting…" : "Submit"}
+          </Button>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col border-t border-neutral-200 dark:border-neutral-800">
+          <div className="flex border-b border-neutral-200 dark:border-neutral-800">
+            <button
+              type="button"
+              onClick={() => setResultTab("testcase")}
+              className={`border-b-2 px-4 py-2 text-sm font-medium ${
+                resultTab === "testcase"
+                  ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+                  : "border-transparent text-neutral-600 dark:text-neutral-400"
+              }`}
+            >
+              Testcase
+            </button>
+            <button
+              type="button"
+              onClick={() => setResultTab("result")}
+              className={`border-b-2 px-4 py-2 text-sm font-medium ${
+                resultTab === "result"
+                  ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+                  : "border-transparent text-neutral-600 dark:text-neutral-400"
+              }`}
+            >
+              Test Result
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto p-4">
+            {resultTab === "testcase" && (
+              <div className="space-y-4">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  Sample input data used when you Run or Submit.
+                </p>
+                {Object.entries(sampleData).map(([tableName, rows]) => (
+                  <div key={tableName}>
+                    <p className="mb-1 font-mono text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                      {tableName} =
+                    </p>
+                    {rows.length > 0 ? (
+                      <div className="max-h-[240px] overflow-auto rounded border border-neutral-200 dark:border-neutral-700">
+                        <table className="w-full text-left text-sm">
+                          <thead className="sticky top-0 bg-neutral-50 dark:bg-neutral-800">
+                            <tr className="border-b border-neutral-200 dark:border-neutral-700">
+                              {Object.keys(rows[0]).map((k) => (
+                                <th
+                                  key={k}
+                                  className="px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300"
+                                >
+                                  {k}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rows.map((row, i) => (
+                              <tr
+                                key={i}
+                                className="border-b border-neutral-100 dark:border-neutral-700"
+                              >
+                                {Object.values(row).map((v, j) => (
+                                  <td
+                                    key={j}
+                                    className="px-3 py-2 font-mono text-neutral-600 dark:text-neutral-400"
+                                  >
+                                    {String(v)}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                        (empty)
+                      </p>
+                    )}
+                  </div>
+                ))}
+                {Object.keys(sampleData).length === 0 && (
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    Loading sample data…
+                  </p>
+                )}
+              </div>
+            )}
+            {resultTab === "result" && (
+              <div className="space-y-3">
+                {submitState && (
+                  <div className="flex items-center gap-2">
+                    {submitState.passed ? (
+                      <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+                        Accepted
+                      </span>
+                    ) : (
+                      <span className="text-lg font-semibold text-amber-600 dark:text-amber-400">
+                        Wrong Answer
+                      </span>
+                    )}
+                    {submitState.message && (
+                      <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                        {submitState.message}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {!runOutput && !submitState && (
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    Run your code or Submit to see the result here.
+                  </p>
+                )}
+                {runOutput?.type === "error" && (
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {runOutput.message}
+                  </p>
+                )}
+                {runOutput?.type === "result" && runOutput.rows !== undefined && (
+                  <div className="max-h-[320px] overflow-auto rounded border border-neutral-200 dark:border-neutral-700">
+                    {runOutput.rows.length > 0 ? (
+                      <table className="w-full text-left text-sm">
+                        <thead className="sticky top-0 bg-neutral-50 dark:bg-neutral-800">
+                          <tr className="border-b border-neutral-200 dark:border-neutral-700">
+                            {Object.keys(runOutput.rows[0]).map((k) => (
+                              <th
+                                key={k}
+                                className="px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300"
+                              >
+                                {k}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {runOutput.rows.map((row, i) => (
+                            <tr
+                              key={i}
+                              className="border-b border-neutral-100 dark:border-neutral-800"
+                            >
+                              {Object.values(row).map((v, j) => (
+                                <td
+                                  key={j}
+                                  className="px-3 py-2 font-mono text-neutral-600 dark:text-neutral-400"
+                                >
+                                  {String(v)}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p className="px-3 py-2 text-sm text-neutral-500 dark:text-neutral-400">
+                        No rows returned.
+                      </p>
+                    )}
+                  </div>
+                )}
+                {submitState?.attemptId && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="text-sm"
+                    onClick={handleRequestFeedback}
+                    disabled={feedbackLoading}
+                  >
+                    {feedbackLoading ? "Loading…" : "Get AI feedback"}
+                  </Button>
+                )}
+                {feedback && (
+                  <div className="rounded border border-neutral-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900">
+                    <p className="mb-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      AI feedback
+                    </p>
+                    <p className="whitespace-pre-wrap text-sm text-neutral-600 dark:text-neutral-400">
+                      {feedback}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

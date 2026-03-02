@@ -48,7 +48,7 @@ export function Nav() {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-      <div className="mx-auto flex h-14 max-w-5xl items-center gap-6 px-4 sm:px-6">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link
           href="/dashboard"
           className="shrink-0 font-semibold text-neutral-900 dark:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 rounded"
@@ -57,8 +57,8 @@ export function Nav() {
           {brandLabel}
         </Link>
 
-        {/* Desktop: nav links with clear active state */}
-        <div className="hidden flex-1 items-center gap-1 overflow-x-auto md:flex">
+        {/* Desktop: nav links with clear active state; min-w-0 allows shrink + scroll when needed */}
+        <div className="hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto md:flex">
           {links.map(({ href, label }) => {
             const active = isActive(pathname, href);
             return (

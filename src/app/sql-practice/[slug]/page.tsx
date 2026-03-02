@@ -35,27 +35,11 @@ export default async function SqlQuestionPage({ params }: PageProps) {
   if (!question) notFound();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <Link
-            href="/sql-practice"
-            className="text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-          >
-            ← SQL Practice
-          </Link>
-          <h1 className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">
-            {question.title}
-          </h1>
-          {question.difficulty && (
-            <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400 capitalize">
-              {question.difficulty}
-            </p>
-          )}
-        </div>
-      </div>
+    <div className="relative left-1/2 right-1/2 flex min-h-[calc(100vh-3.5rem)] w-screen min-w-0 -ml-[50vw] -mr-[50vw]">
       <SqlPracticeEditor
         questionId={question.id}
+        title={question.title}
+        difficulty={question.difficulty ?? undefined}
         problemStatement={question.problemStatement}
         schemaSql={question.schemaSql}
         seedSql={question.seedSql}
