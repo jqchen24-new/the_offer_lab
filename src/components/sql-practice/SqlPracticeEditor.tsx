@@ -102,7 +102,9 @@ export function SqlPracticeEditor({
             try {
               const execResult = db.exec(`SELECT * FROM ${tableName}`);
               if (execResult.length > 0) {
-                const { columns, values } = execResult[0];
+                const first = execResult[0];
+                const columns = Array.isArray(first?.columns) ? first.columns : [];
+                const values = Array.isArray(first?.values) ? first.values : [];
                 data[tableName] = values.map((row) => {
                   const obj: Record<string, unknown> = {};
                   columns.forEach((col, i) => {
@@ -157,7 +159,9 @@ export function SqlPracticeEditor({
           setRunOutput({ type: "result", rows: [] });
           return;
         }
-        const { columns, values } = execResult[0];
+        const first = execResult[0];
+        const columns = Array.isArray(first?.columns) ? first.columns : [];
+        const values = Array.isArray(first?.values) ? first.values : [];
         const rows: Record<string, unknown>[] = values.map((row) => {
           const obj: Record<string, unknown> = {};
           columns.forEach((col, i) => {
@@ -205,7 +209,9 @@ export function SqlPracticeEditor({
         db.exec(seedSql);
         const execResult = db.exec(code);
         if (execResult.length > 0) {
-          const { columns, values } = execResult[0];
+          const first = execResult[0];
+          const columns = Array.isArray(first?.columns) ? first.columns : [];
+          const values = Array.isArray(first?.values) ? first.values : [];
           actualRows = values.map((row) => {
             const obj: Record<string, unknown> = {};
             columns.forEach((col, i) => {
@@ -232,11 +238,15 @@ export function SqlPracticeEditor({
         return;
       }
       const { passed, message } = compareSqlResult(actualRows, expectedResult);
+      const runResultPayload =
+        actualRows.length > 0
+          ? (JSON.parse(JSON.stringify(actualRows)) as Record<string, unknown>[])
+          : undefined;
       const res = await submitAttemptAction(
         questionId,
         code,
         passed,
-        actualRows
+        runResultPayload
       );
       if (!res.ok) {
         setSubmitState({ passed, message: res.error });
