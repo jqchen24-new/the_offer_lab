@@ -384,6 +384,66 @@ export function SqlPracticeEditor({
                   {problemStatement}
                 </ReactMarkdown>
               </div>
+              {Array.isArray(expectedResult) && expectedResult.length >= 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                    Expected output
+                  </p>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                    Your query must return a table with exactly these columns and row(s). Column order and row order are ignored when checking; only the set of rows must match.
+                  </p>
+                  {expectedResult.length > 0 ? (
+                    (() => {
+                      const first = expectedResult[0];
+                      const expKeys =
+                        first !== null && typeof first === "object" && Object.keys(first).length > 0
+                          ? Object.keys(first)
+                          : ["(no columns)"];
+                      return (
+                        <div className="overflow-hidden rounded border border-neutral-200 dark:border-neutral-700">
+                          <table className="w-full text-left text-sm">
+                            <thead>
+                              <tr className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800">
+                                {expKeys.map((col) => (
+                                  <th
+                                    key={String(col)}
+                                    className="px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300"
+                                  >
+                                    {String(col)}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {expectedResult.map((row, i) => (
+                                <tr
+                                  key={i}
+                                  className="border-b border-neutral-100 last:border-0 dark:border-neutral-700"
+                                >
+                                  {expKeys.map((k) => (
+                                    <td
+                                      key={String(k)}
+                                      className="px-3 py-2 font-mono text-neutral-600 dark:text-neutral-400"
+                                    >
+                                      {row !== null && typeof row === "object" && k in row
+                                        ? String((row as Record<string, unknown>)[k])
+                                        : "\u00a0"}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <p className="rounded border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
+                      (empty result — 0 rows)
+                    </p>
+                  )}
+                </div>
+              )}
               {schemaTables.length > 0 && (
                 <div className="space-y-4">
                   {schemaTables.map(({ tableName, columns }) => (
