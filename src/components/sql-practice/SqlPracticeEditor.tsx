@@ -221,7 +221,27 @@ export function SqlPracticeEditor({
           }
           return obj;
         });
-        setRunOutput({ type: "result", rows });
+        const displayRows =
+          expectedResult.length > 0 && rows.length > 0
+            ? (() => {
+                const expectedKeys = Object.keys(expectedResult[0]);
+                const rowKeys = Object.keys(rows[0]);
+                const isGeneric = rowKeys.every(
+                  (k, i) => k === `Column ${i + 1}`
+                );
+                if (isGeneric && expectedKeys.length === rowKeys.length) {
+                  return rows.map((row) => {
+                    const out: Record<string, unknown> = {};
+                    expectedKeys.forEach((ek, i) => {
+                      out[ek] = row[`Column ${i + 1}`];
+                    });
+                    return out;
+                  });
+                }
+                return rows;
+              })()
+            : rows;
+        setRunOutput({ type: "result", rows: displayRows });
       } catch (e) {
         const err = e instanceof Error ? e.message : String(e);
         setRunOutput({ type: "error", message: err });
@@ -322,8 +342,8 @@ export function SqlPracticeEditor({
           : actualRows;
       const { passed, message } = compareSqlResult(actualForCompare, expectedResult);
       const runResultPayload =
-        actualRows.length > 0
-          ? (JSON.parse(JSON.stringify(actualRows)) as Record<string, unknown>[])
+        actualForCompare.length > 0
+          ? (JSON.parse(JSON.stringify(actualForCompare)) as Record<string, unknown>[])
           : undefined;
       const res = await submitAttemptAction(
         questionId,
@@ -340,7 +360,7 @@ export function SqlPracticeEditor({
           attemptId: res.attemptId,
         });
       }
-      setRunOutput({ type: "result", rows: actualRows });
+      setRunOutput({ type: "result", rows: actualForCompare });
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       setSubmitState({ passed: false, message });
