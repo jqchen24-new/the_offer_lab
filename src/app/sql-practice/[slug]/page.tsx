@@ -43,7 +43,7 @@ export default async function SqlQuestionPage({ params }: PageProps) {
         problemStatement={question.problemStatement}
         schemaSql={question.schemaSql}
         seedSql={question.seedSql}
-        expectedResult={question.expectedResult as Record<string, unknown>[]}
+        expectedResult={(Array.isArray(question.expectedResult) ? question.expectedResult : []) as Record<string, unknown>[]}
       />
     </div>
   );

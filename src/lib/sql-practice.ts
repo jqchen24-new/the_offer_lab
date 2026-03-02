@@ -40,8 +40,10 @@ export async function getSqlAttemptPassedByQuestion(userId: string) {
  * and row order don't matter. Returns a sorted array of canonical row strings.
  */
 function normalizeRows(rows: Record<string, unknown>[]): string[] {
+  if (!Array.isArray(rows)) return [];
   return rows
     .map((row) => {
+      if (row === null || typeof row !== "object") return "{}";
       const sorted: Record<string, unknown> = {};
       for (const k of Object.keys(row).sort()) {
         sorted[k] = row[k];
@@ -59,8 +61,8 @@ export function compareSqlResult(
   actualRows: Record<string, unknown>[],
   expectedRows: Record<string, unknown>[]
 ): { passed: boolean; message?: string } {
-  const a = normalizeRows(actualRows);
-  const b = normalizeRows(expectedRows);
+  const a = normalizeRows(Array.isArray(actualRows) ? actualRows : []);
+  const b = normalizeRows(Array.isArray(expectedRows) ? expectedRows : []);
   if (a.length !== b.length) {
     return {
       passed: false,
