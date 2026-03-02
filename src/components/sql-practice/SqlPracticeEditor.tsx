@@ -510,49 +510,6 @@ export function SqlPracticeEditor({
                   })()}
                 </div>
               )}
-              {schemaTables.length > 0 && (
-                <div className="space-y-4 border-t border-neutral-200 pt-5 dark:border-neutral-700">
-                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                    Schema
-                  </h3>
-                  {schemaTables.map(({ tableName, columns }) => (
-                    <div key={tableName}>
-                      <p className="mb-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400">
-                        Table: <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-xs text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">{tableName}</code>
-                      </p>
-                      <div className="overflow-hidden rounded border border-neutral-200 dark:border-neutral-700">
-                        <table className="w-full text-left text-sm">
-                          <thead>
-                            <tr className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800">
-                              <th className="px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300">
-                                Column Name
-                              </th>
-                              <th className="px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300">
-                                Type
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {columns.map((col) => (
-                              <tr
-                                key={col.name}
-                                className="border-b border-neutral-100 last:border-0 dark:border-neutral-700"
-                              >
-                                <td className="font-mono px-3 py-2 text-neutral-800 dark:text-neutral-200">
-                                  {col.name}
-                                </td>
-                                <td className="font-mono px-3 py-2 text-neutral-600 dark:text-neutral-400">
-                                  {col.type ?? "—"}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           )}
           {leftTab === "Submissions" && (
