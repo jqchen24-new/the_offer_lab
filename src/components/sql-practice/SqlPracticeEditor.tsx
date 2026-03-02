@@ -505,7 +505,7 @@ export function SqlPracticeEditor({
               </div>
             )}
             {resultTab === "result" && (
-              <div className="space-y-3">
+              <div className="min-h-[120px] space-y-3">
                 {submitState && (
                   <div className="flex items-center gap-2">
                     {submitState.passed ? (
@@ -524,7 +524,12 @@ export function SqlPracticeEditor({
                     )}
                   </div>
                 )}
-                {!runOutput && !submitState && (
+                {loading && !runOutput && (
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    Running…
+                  </p>
+                )}
+                {!loading && !runOutput && !submitState && (
                   <p className="text-sm text-neutral-500 dark:text-neutral-400">
                     Run your code or Submit to see the result here.
                   </p>
@@ -535,7 +540,11 @@ export function SqlPracticeEditor({
                   </p>
                 )}
                 {runOutput?.type === "result" && runOutput.rows !== undefined && (
-                  <div className="max-h-[320px] overflow-auto rounded border border-neutral-200 dark:border-neutral-700">
+                  <>
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Output
+                    </p>
+                    <div className="max-h-[320px] overflow-auto rounded border border-neutral-200 dark:border-neutral-700">
                     {runOutput.rows.length > 0 ? (
                       <table className="w-full text-left text-sm">
                         <thead className="sticky top-0 bg-neutral-50 dark:bg-neutral-800">
@@ -574,6 +583,7 @@ export function SqlPracticeEditor({
                       </p>
                     )}
                   </div>
+                  </>
                 )}
                 {submitState?.attemptId && (
                   <Button
