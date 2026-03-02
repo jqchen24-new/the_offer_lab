@@ -49,6 +49,18 @@ function normalizeColumnNames(cols: unknown): string[] {
   return [];
 }
 
+/** sql.js may return row values as array-like; normalize to array. */
+function normalizeRowValues(row: unknown): unknown[] {
+  if (Array.isArray(row)) return row;
+  if (row != null && typeof row === "object" && "length" in row) {
+    const len = Number((row as { length: number }).length);
+    if (Number.isInteger(len) && len >= 0) {
+      return Array.from({ length: len }, (_, i) => (row as Record<number, unknown>)[i]);
+    }
+  }
+  return [];
+}
+
 type SqlPracticeEditorProps = {
   questionId: string;
   title: string;
@@ -110,17 +122,22 @@ export function SqlPracticeEditor({
           db.exec(schemaSql);
           db.exec(seedSql);
           const data: Record<string, Record<string, unknown>[]> = {};
-          for (const { tableName } of schemaTables) {
+          for (const table of schemaTables) {
+            const { tableName, columns: schemaCols } = table;
+            const columnNames = schemaCols.map((c) => c.name);
             try {
               const execResult = db.exec(`SELECT * FROM ${tableName}`);
               if (execResult.length > 0) {
                 const first = execResult[0];
-                const columns = normalizeColumnNames(first?.columns);
+                const columns =
+                  columnNames.length > 0
+                    ? columnNames
+                    : normalizeColumnNames(first?.columns);
                 const values = Array.isArray(first?.values) ? first.values : [];
                 const rowValues = Array.isArray(values) ? values : [];
                 data[tableName] = rowValues.map((row) => {
                   const obj: Record<string, unknown> = {};
-                  const arr = Array.isArray(row) ? row : [];
+                  const arr = normalizeRowValues(row);
                   if (columns.length > 0) {
                     columns.forEach((col, i) => {
                       obj[String(col)] = arr[i];
@@ -192,7 +209,7 @@ export function SqlPracticeEditor({
         const rowValues = Array.isArray(values) ? values : [];
         const rows: Record<string, unknown>[] = rowValues.map((row) => {
           const obj: Record<string, unknown> = {};
-          const arr = Array.isArray(row) ? row : [];
+          const arr = normalizeRowValues(row);
           if (columns.length > 0) {
             columns.forEach((col, i) => {
               obj[String(col)] = arr[i];
@@ -250,7 +267,7 @@ export function SqlPracticeEditor({
           const rowValues = Array.isArray(values) ? values : [];
           actualRows = rowValues.map((row) => {
             const obj: Record<string, unknown> = {};
-            const arr = Array.isArray(row) ? row : [];
+            const arr = normalizeRowValues(row);
             if (columns.length > 0) {
               columns.forEach((col, i) => {
                 obj[String(col)] = arr[i];
