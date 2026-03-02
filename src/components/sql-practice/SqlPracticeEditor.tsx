@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { sql } from "@codemirror/lang-sql";
 import ReactMarkdown from "react-markdown";
@@ -8,6 +8,33 @@ import remarkGfm from "remark-gfm";
 import { compareSqlResult } from "@/lib/sql-practice";
 import { submitAttemptAction, requestSqlFeedbackAction } from "@/app/sql-practice/actions";
 import { Button } from "@/components/ui/Button";
+
+type TableSchema = { tableName: string; columns: { name: string; type?: string }[] };
+
+function parseSchema(schemaSql: string): TableSchema[] {
+  const tables: TableSchema[] = [];
+  const regex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?(\w+)["']?\s*\(([\s\S]*?)\)\s*;?/gi;
+  let m: RegExpExecArray | null;
+  while ((m = regex.exec(schemaSql)) !== null) {
+    const tableName = m[1];
+    const body = m[2];
+    const columns: { name: string; type?: string }[] = [];
+    const parts = body.split(",").map((s) => s.trim());
+    for (const part of parts) {
+      const constraintStart = /^(CONSTRAINT|PRIMARY\s+KEY|FOREIGN\s+KEY|UNIQUE|CHECK)\b/i.test(part);
+      if (constraintStart) continue;
+      const colMatch = part.match(/^["']?(\w+)["']?\s*(.*)$/);
+      if (colMatch) {
+        columns.push({
+          name: colMatch[1],
+          type: colMatch[2].trim() || undefined,
+        });
+      }
+    }
+    tables.push({ tableName, columns });
+  }
+  return tables;
+}
 
 type SqlPracticeEditorProps = {
   questionId: string;
@@ -38,6 +65,8 @@ export function SqlPracticeEditor({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+
+  const schemaTables = useMemo(() => parseSchema(schemaSql), [schemaSql]);
 
   const runSql = useCallback(async () => {
     setRunOutput(null);
@@ -168,7 +197,7 @@ export function SqlPracticeEditor({
   }, [submitState?.attemptId]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-6 lg:grid-cols-[1fr,1.2fr]">
       <div className="space-y-4">
         <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
           <h2 className="mb-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
@@ -180,21 +209,63 @@ export function SqlPracticeEditor({
             </ReactMarkdown>
           </div>
         </div>
+
+        {schemaTables.length > 0 && (
+          <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
+            <h2 className="mb-3 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+              Schema
+            </h2>
+            <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
+              Table names and columns you can use in your query.
+            </p>
+            <div className="space-y-4">
+              {schemaTables.map(({ tableName, columns }) => (
+                <div
+                  key={tableName}
+                  className="rounded-md border border-neutral-100 bg-neutral-50/80 dark:border-neutral-700 dark:bg-neutral-800/80"
+                >
+                  <div className="border-b border-neutral-200 px-3 py-2 font-mono text-sm font-medium text-neutral-900 dark:border-neutral-700 dark:text-white">
+                    {tableName}
+                  </div>
+                  <ul className="list-none px-3 py-2">
+                    {columns.map((col) => (
+                      <li
+                        key={col.name}
+                        className="flex items-baseline gap-2 border-b border-neutral-100 last:border-0 dark:border-neutral-700/80 py-1.5 text-sm"
+                      >
+                        <span className="font-mono font-medium text-neutral-800 dark:text-neutral-200">
+                          {col.name}
+                        </span>
+                        {col.type && (
+                          <span className="font-mono text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                            {col.type}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <div className="space-y-4">
         <div className="rounded-lg border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
           <h2 className="border-b border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
             Your solution
           </h2>
-          <CodeMirror
-            value={code}
-            height="200px"
-            extensions={[sql()]}
-            onChange={setCode}
-            basicSetup={{ lineNumbers: true }}
-            className="rounded border border-neutral-200 dark:border-neutral-700 text-sm [&_.cm-editor]:outline-none"
-          />
-          <div className="flex gap-2 border-t border-neutral-200 p-2 dark:border-neutral-700">
+          <div className="min-h-[380px]">
+            <CodeMirror
+              value={code}
+              height="380px"
+              extensions={[sql()]}
+              onChange={setCode}
+              basicSetup={{ lineNumbers: true }}
+              className="rounded-b-lg border-0 text-sm [&_.cm-editor]:outline-none [&_.cm-scroller]:min-h-[380px]"
+            />
+          </div>
+          <div className="flex gap-2 border-t border-neutral-200 p-3 dark:border-neutral-700">
             <Button
               type="button"
               variant="secondary"
@@ -222,14 +293,14 @@ export function SqlPracticeEditor({
                 {runOutput.message}
               </p>
             ) : runOutput.rows && runOutput.rows.length > 0 ? (
-              <div className="overflow-x-auto">
+              <div className="max-h-[320px] overflow-auto rounded border border-neutral-100 dark:border-neutral-700">
                 <table className="w-full text-left text-sm">
-                  <thead>
+                  <thead className="sticky top-0 bg-neutral-50 dark:bg-neutral-800/95">
                     <tr className="border-b border-neutral-200 dark:border-neutral-700">
                       {Object.keys(runOutput.rows[0]).map((k) => (
                         <th
                           key={k}
-                          className="px-2 py-1 font-medium text-neutral-700 dark:text-neutral-300"
+                          className="px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300"
                         >
                           {k}
                         </th>
@@ -245,7 +316,7 @@ export function SqlPracticeEditor({
                         {Object.values(row).map((v, j) => (
                           <td
                             key={j}
-                            className="px-2 py-1 text-neutral-600 dark:text-neutral-400"
+                            className="px-3 py-2 font-mono text-neutral-600 dark:text-neutral-400"
                           >
                             {String(v)}
                           </td>
