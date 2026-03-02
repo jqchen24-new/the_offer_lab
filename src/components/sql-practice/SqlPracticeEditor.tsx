@@ -105,11 +105,19 @@ export function SqlPracticeEditor({
                 const first = execResult[0];
                 const columns = Array.isArray(first?.columns) ? first.columns : [];
                 const values = Array.isArray(first?.values) ? first.values : [];
-                data[tableName] = values.map((row) => {
+                const rowValues = Array.isArray(values) ? values : [];
+                data[tableName] = rowValues.map((row) => {
                   const obj: Record<string, unknown> = {};
-                  columns.forEach((col, i) => {
-                    obj[col] = row[i];
-                  });
+                  const arr = Array.isArray(row) ? row : [];
+                  if (columns.length > 0) {
+                    columns.forEach((col, i) => {
+                      obj[String(col)] = arr[i];
+                    });
+                  } else {
+                    arr.forEach((val, i) => {
+                      obj[`Column ${i + 1}`] = val;
+                    });
+                  }
                   return obj;
                 });
               } else {
@@ -169,11 +177,19 @@ export function SqlPracticeEditor({
           ) ?? execResult[execResult.length - 1] ?? execResult[0];
         const columns = Array.isArray(resultSet?.columns) ? resultSet.columns : [];
         const values = Array.isArray(resultSet?.values) ? resultSet.values : [];
-        const rows: Record<string, unknown>[] = values.map((row) => {
+        const rowValues = Array.isArray(values) ? values : [];
+        const rows: Record<string, unknown>[] = rowValues.map((row) => {
           const obj: Record<string, unknown> = {};
-          columns.forEach((col, i) => {
-            obj[col] = row[i];
-          });
+          const arr = Array.isArray(row) ? row : [];
+          if (columns.length > 0) {
+            columns.forEach((col, i) => {
+              obj[String(col)] = arr[i];
+            });
+          } else {
+            arr.forEach((val, i) => {
+              obj[`Column ${i + 1}`] = val;
+            });
+          }
           return obj;
         });
         setRunOutput({ type: "result", rows });
@@ -219,11 +235,19 @@ export function SqlPracticeEditor({
           const resultSet = execResult[execResult.length - 1];
           const columns = Array.isArray(resultSet?.columns) ? resultSet.columns : [];
           const values = Array.isArray(resultSet?.values) ? resultSet.values : [];
-          actualRows = values.map((row) => {
+          const rowValues = Array.isArray(values) ? values : [];
+          actualRows = rowValues.map((row) => {
             const obj: Record<string, unknown> = {};
-            columns.forEach((col, i) => {
-              obj[col] = row[i];
-            });
+            const arr = Array.isArray(row) ? row : [];
+            if (columns.length > 0) {
+              columns.forEach((col, i) => {
+                obj[String(col)] = arr[i];
+              });
+            } else {
+              arr.forEach((val, i) => {
+                obj[`Column ${i + 1}`] = val;
+              });
+            }
             return obj;
           });
         }
@@ -556,39 +580,58 @@ export function SqlPracticeEditor({
                         </span>
                       )}
                     </p>
-                    <div className="max-h-[320px] overflow-auto rounded border border-neutral-200 dark:border-neutral-700">
+                    <div className="min-h-[80px] max-h-[320px] overflow-auto rounded border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
                     {runOutput.rows.length > 0 ? (
-                      <table className="w-full text-left text-sm">
-                        <thead className="sticky top-0 bg-neutral-50 dark:bg-neutral-800">
-                          <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                            {Object.keys(runOutput.rows[0]).map((k) => (
-                              <th
-                                key={k}
-                                className="px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300"
-                              >
-                                {k}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {runOutput.rows.map((row, i) => (
-                            <tr
-                              key={i}
-                              className="border-b border-neutral-100 dark:border-neutral-800"
-                            >
-                              {Object.values(row).map((v, j) => (
-                                <td
-                                  key={j}
-                                  className="px-3 py-2 font-mono text-neutral-600 dark:text-neutral-400"
+                      (() => {
+                        const firstRow = runOutput.rows[0];
+                        let keys: string[] =
+                          firstRow !== null && typeof firstRow === "object" ? Object.keys(firstRow) : [];
+                        if (keys.length === 0) {
+                          const withKeys = runOutput.rows.find((r) => r && typeof r === "object" && Object.keys(r).length > 0);
+                          keys = withKeys
+                            ? Object.keys(withKeys)
+                            : Array.from(
+                                { length: Math.max(1, ...runOutput.rows.map((r) => (r && typeof r === "object" ? Object.values(r).length : 0))) },
+                                (_, i) => `Column ${i + 1}`
+                              );
+                        }
+                        return (
+                          <table className="w-full min-w-[200px] table-auto border-collapse text-left text-sm">
+                            <thead className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-800">
+                              <tr className="border-b border-neutral-200 dark:border-neutral-700">
+                                {keys.map((k) => (
+                                  <th
+                                    key={String(k)}
+                                    className="border-b border-neutral-200 px-3 py-2 font-medium text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
+                                  >
+                                    {String(k) || "\u00a0"}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {runOutput.rows.map((row, i) => (
+                                <tr
+                                  key={i}
+                                  className="border-b border-neutral-100 dark:border-neutral-800"
                                 >
-                                  {String(v)}
-                                </td>
+                                  {keys.map((k) => {
+                                    const val = row && typeof row === "object" && k in row ? (row as Record<string, unknown>)[k] : null;
+                                    return (
+                                      <td
+                                        key={String(k)}
+                                        className="border-b border-neutral-100 px-3 py-2 font-mono text-neutral-700 dark:border-neutral-800 dark:text-neutral-300"
+                                      >
+                                        {val === null || val === undefined ? "\u00a0" : String(val)}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
                               ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                            </tbody>
+                          </table>
+                        );
+                      })()
                     ) : (
                       <p className="px-3 py-2 text-sm text-neutral-500 dark:text-neutral-400">
                         No rows returned.
