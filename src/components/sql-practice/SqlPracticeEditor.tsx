@@ -155,13 +155,20 @@ export function SqlPracticeEditor({
         db.exec(seedSql);
         const execResult = db.exec(code);
         db.close();
-        if (execResult.length === 0) {
+        if (!Array.isArray(execResult) || execResult.length === 0) {
           setRunOutput({ type: "result", rows: [] });
           return;
         }
-        const first = execResult[0];
-        const columns = Array.isArray(first?.columns) ? first.columns : [];
-        const values = Array.isArray(first?.values) ? first.values : [];
+        const resultSet =
+          execResult.find(
+            (r) =>
+              Array.isArray(r?.values) &&
+              r.values.length > 0 &&
+              Array.isArray(r?.columns) &&
+              r.columns.length > 0
+          ) ?? execResult[execResult.length - 1] ?? execResult[0];
+        const columns = Array.isArray(resultSet?.columns) ? resultSet.columns : [];
+        const values = Array.isArray(resultSet?.values) ? resultSet.values : [];
         const rows: Record<string, unknown>[] = values.map((row) => {
           const obj: Record<string, unknown> = {};
           columns.forEach((col, i) => {
@@ -208,10 +215,10 @@ export function SqlPracticeEditor({
         db.exec(schemaSql);
         db.exec(seedSql);
         const execResult = db.exec(code);
-        if (execResult.length > 0) {
-          const first = execResult[0];
-          const columns = Array.isArray(first?.columns) ? first.columns : [];
-          const values = Array.isArray(first?.values) ? first.values : [];
+        if (Array.isArray(execResult) && execResult.length > 0) {
+          const resultSet = execResult[execResult.length - 1];
+          const columns = Array.isArray(resultSet?.columns) ? resultSet.columns : [];
+          const values = Array.isArray(resultSet?.values) ? resultSet.values : [];
           actualRows = values.map((row) => {
             const obj: Record<string, unknown> = {};
             columns.forEach((col, i) => {
@@ -543,6 +550,11 @@ export function SqlPracticeEditor({
                   <>
                     <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                       Output
+                      {runOutput.rows.length >= 0 && (
+                        <span className="ml-2 font-normal text-neutral-500 dark:text-neutral-400">
+                          ({runOutput.rows.length} row{runOutput.rows.length !== 1 ? "s" : ""})
+                        </span>
+                      )}
                     </p>
                     <div className="max-h-[320px] overflow-auto rounded border border-neutral-200 dark:border-neutral-700">
                     {runOutput.rows.length > 0 ? (
