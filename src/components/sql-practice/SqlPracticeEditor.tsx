@@ -403,36 +403,38 @@ export function SqlPracticeEditor({
             </button>
           ))}
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">
           {leftTab === "Description" && (
-            <div className="space-y-4">
-              <h1 className="text-xl font-semibold text-neutral-900 dark:text-white">
-                {title}
-              </h1>
-              {difficulty && (
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded bg-neutral-200 px-2 py-0.5 text-xs font-medium text-neutral-700 dark:bg-neutral-600 dark:text-neutral-200">
-                    {difficulty}
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <h1 className="text-lg font-bold text-neutral-900 dark:text-white">
+                  {title}
+                </h1>
+                {difficulty && (
+                  <span
+                    className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      difficulty.toLowerCase() === "easy"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : difficulty.toLowerCase() === "medium"
+                          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    }`}
+                  >
+                    {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
                   </span>
-                </div>
-              )}
-              <div className="flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400">
-                <span className="font-medium text-blue-600 dark:text-blue-400">SQL Schema</span>
-                <span className="text-neutral-400 dark:text-neutral-500">&gt;</span>
-                <span>Pandas Schema</span>
-                <span className="text-neutral-400 dark:text-neutral-500">&gt;</span>
+                )}
               </div>
-              <div className="prose prose-sm max-w-none dark:prose-invert prose-p:text-neutral-600 prose-p:dark:text-neutral-400">
+              <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:leading-relaxed prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-strong:text-neutral-900 dark:prose-strong:text-white prose-code:rounded prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-medium prose-code:text-neutral-800 dark:prose-code:bg-neutral-800 dark:prose-code:text-neutral-200 prose-table:border-collapse prose-th:border prose-th:border-neutral-200 prose-th:bg-neutral-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-sm prose-th:font-semibold prose-th:text-neutral-700 dark:prose-th:border-neutral-700 dark:prose-th:bg-neutral-800 dark:prose-th:text-neutral-300 prose-td:border prose-td:border-neutral-200 prose-td:px-3 prose-td:py-1.5 prose-td:text-sm prose-td:text-neutral-600 dark:prose-td:border-neutral-700 dark:prose-td:text-neutral-400 prose-li:text-neutral-700 dark:prose-li:text-neutral-300">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {problemStatement}
                 </ReactMarkdown>
               </div>
               {Array.isArray(expectedResult) && expectedResult.length >= 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                    Expected output
-                  </p>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                <div className="space-y-3 border-t border-neutral-200 pt-5 dark:border-neutral-700">
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                    Expected Output
+                  </h3>
+                  <p className="text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
                     Your query must return a table with exactly these columns and row(s). Column order and row order are ignored when checking; only the set of rows must match.
                   </p>
                   {expectedResult.length > 0 ? (
@@ -488,11 +490,14 @@ export function SqlPracticeEditor({
                 </div>
               )}
               {schemaTables.length > 0 && (
-                <div className="space-y-4">
+                <div className="space-y-4 border-t border-neutral-200 pt-5 dark:border-neutral-700">
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                    Schema
+                  </h3>
                   {schemaTables.map(({ tableName, columns }) => (
                     <div key={tableName}>
-                      <p className="mb-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        Table: {tableName}
+                      <p className="mb-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                        Table: <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-xs text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">{tableName}</code>
                       </p>
                       <div className="overflow-hidden rounded border border-neutral-200 dark:border-neutral-700">
                         <table className="w-full text-left text-sm">
