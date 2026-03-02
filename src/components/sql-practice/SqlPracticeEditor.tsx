@@ -37,6 +37,18 @@ function parseSchema(schemaSql: string): TableSchema[] {
   return tables;
 }
 
+/** sql.js may return columns as array-like (e.g. from WASM); normalize to string[]. */
+function normalizeColumnNames(cols: unknown): string[] {
+  if (Array.isArray(cols)) return cols.map((c) => String(c));
+  if (cols != null && typeof cols === "object" && "length" in cols) {
+    const len = Number((cols as { length: number }).length);
+    if (Number.isInteger(len) && len >= 0) {
+      return Array.from({ length: len }, (_, i) => String((cols as Record<number, unknown>)[i]));
+    }
+  }
+  return [];
+}
+
 type SqlPracticeEditorProps = {
   questionId: string;
   title: string;
@@ -103,7 +115,7 @@ export function SqlPracticeEditor({
               const execResult = db.exec(`SELECT * FROM ${tableName}`);
               if (execResult.length > 0) {
                 const first = execResult[0];
-                const columns = Array.isArray(first?.columns) ? first.columns : [];
+                const columns = normalizeColumnNames(first?.columns);
                 const values = Array.isArray(first?.values) ? first.values : [];
                 const rowValues = Array.isArray(values) ? values : [];
                 data[tableName] = rowValues.map((row) => {
@@ -169,13 +181,13 @@ export function SqlPracticeEditor({
         }
         const resultSet =
           execResult.find(
-            (r) =>
-              Array.isArray(r?.values) &&
-              r.values.length > 0 &&
-              Array.isArray(r?.columns) &&
-              r.columns.length > 0
+            (r) => {
+              const vals = r?.values;
+              const cols = normalizeColumnNames(r?.columns);
+              return Array.isArray(vals) && vals.length > 0 && cols.length > 0;
+            }
           ) ?? execResult[execResult.length - 1] ?? execResult[0];
-        const columns = Array.isArray(resultSet?.columns) ? resultSet.columns : [];
+        const columns = normalizeColumnNames(resultSet?.columns);
         const values = Array.isArray(resultSet?.values) ? resultSet.values : [];
         const rowValues = Array.isArray(values) ? values : [];
         const rows: Record<string, unknown>[] = rowValues.map((row) => {
@@ -233,7 +245,7 @@ export function SqlPracticeEditor({
         const execResult = db.exec(code);
         if (Array.isArray(execResult) && execResult.length > 0) {
           const resultSet = execResult[execResult.length - 1];
-          const columns = Array.isArray(resultSet?.columns) ? resultSet.columns : [];
+          const columns = normalizeColumnNames(resultSet?.columns);
           const values = Array.isArray(resultSet?.values) ? resultSet.values : [];
           const rowValues = Array.isArray(values) ? values : [];
           actualRows = rowValues.map((row) => {
