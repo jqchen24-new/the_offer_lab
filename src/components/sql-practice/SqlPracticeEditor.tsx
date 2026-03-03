@@ -187,6 +187,7 @@ export function SqlPracticeEditor({
   const runSql = useCallback(async () => {
     setRunOutput(null);
     setSubmitState(null);
+    setFeedback(null);
     setResultTab("result");
     setLoading(true);
     try {
@@ -274,6 +275,7 @@ export function SqlPracticeEditor({
   const handleSubmit = useCallback(async () => {
     setSubmitState(null);
     setRunOutput(null);
+    setFeedback(null);
     setResultTab("result");
     setLoading(true);
     try {
@@ -586,7 +588,7 @@ export function SqlPracticeEditor({
             &lt;/&gt; Code
           </span>
           <span className="ml-2 rounded bg-neutral-200 px-2 py-0.5 text-xs font-mono text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200">
-            SQLite
+            MySQL
           </span>
         </div>
         <div className="shrink-0">

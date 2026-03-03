@@ -24,9 +24,9 @@ Return the salary that is strictly second when distinct salaries are ordered des
 
 | employees | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| salary | INTEGER |`,
-      schemaSql: `CREATE TABLE employees (id INTEGER PRIMARY KEY, salary INTEGER);`,
+| id | INT PRIMARY KEY |
+| salary | INT |`,
+      schemaSql: `CREATE TABLE employees (id INT PRIMARY KEY, salary INT);`,
       seedSql: `INSERT INTO employees (id, salary) VALUES (1, 100), (2, 200), (3, 200);`,
       expectedResult: [{ salary: 100 }],
     },
@@ -45,17 +45,17 @@ Return \`department_name\`, \`employee_name\`, and \`salary\`.
 
 | employee | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| name | TEXT |
-| salary | INTEGER |
-| departmentId | INTEGER |
+| id | INT PRIMARY KEY |
+| name | VARCHAR(255) |
+| salary | INT |
+| departmentId | INT |
 
 | department | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| name | TEXT |`,
-      schemaSql: `CREATE TABLE department (id INTEGER PRIMARY KEY, name TEXT);
-CREATE TABLE employee (id INTEGER PRIMARY KEY, name TEXT, salary INTEGER, departmentId INTEGER);`,
+| id | INT PRIMARY KEY |
+| name | VARCHAR(255) |`,
+      schemaSql: `CREATE TABLE department (id INT PRIMARY KEY, name VARCHAR(255));
+CREATE TABLE employee (id INT PRIMARY KEY, name VARCHAR(255), salary INT, departmentId INT);`,
       seedSql: `INSERT INTO department (id, name) VALUES (1, 'IT'), (2, 'Sales');
 INSERT INTO employee (id, name, salary, departmentId) VALUES (1, 'Joe', 70000, 1), (2, 'Jim', 90000, 1), (3, 'Henry', 80000, 2);`,
       expectedResult: [
@@ -76,9 +76,9 @@ INSERT INTO employee (id, name, salary, departmentId) VALUES (1, 'Joe', 70000, 1
 
 | person | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| email | TEXT |`,
-      schemaSql: `CREATE TABLE person (id INTEGER PRIMARY KEY, email TEXT);`,
+| id | INT PRIMARY KEY |
+| email | VARCHAR(255) |`,
+      schemaSql: `CREATE TABLE person (id INT PRIMARY KEY, email VARCHAR(255));`,
       seedSql: `INSERT INTO person (id, email) VALUES (1, 'a@b.com'), (2, 'c@d.com'), (3, 'a@b.com');`,
       expectedResult: [{ email: "a@b.com" }],
     },
@@ -97,15 +97,15 @@ Return the customer \`name\`.
 
 | customers | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| name | TEXT |
+| id | INT PRIMARY KEY |
+| name | VARCHAR(255) |
 
 | orders | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| customerId | INTEGER |`,
-      schemaSql: `CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT);
-CREATE TABLE orders (id INTEGER PRIMARY KEY, customerId INTEGER);`,
+| id | INT PRIMARY KEY |
+| customerId | INT |`,
+      schemaSql: `CREATE TABLE customers (id INT PRIMARY KEY, name VARCHAR(255));
+CREATE TABLE orders (id INT PRIMARY KEY, customerId INT);`,
       seedSql: `INSERT INTO customers (id, name) VALUES (1, 'Joe'), (2, 'Henry'), (3, 'Sam'), (4, 'Max');
 INSERT INTO orders (id, customerId) VALUES (1, 3), (2, 1);`,
       expectedResult: [{ name: "Henry" }, { name: "Max" }],
@@ -125,11 +125,11 @@ Return the employee \`name\`.
 
 | employee | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| name | TEXT |
-| salary | INTEGER |
-| managerId | INTEGER |`,
-      schemaSql: `CREATE TABLE employee (id INTEGER PRIMARY KEY, name TEXT, salary INTEGER, managerId INTEGER);`,
+| id | INT PRIMARY KEY |
+| name | VARCHAR(255) |
+| salary | INT |
+| managerId | INT |`,
+      schemaSql: `CREATE TABLE employee (id INT PRIMARY KEY, name VARCHAR(255), salary INT, managerId INT);`,
       seedSql: `INSERT INTO employee (id, name, salary, managerId) VALUES (1, 'Joe', 70000, 3), (2, 'Henry', 80000, 4), (3, 'Sam', 60000, NULL), (4, 'Max', 90000, NULL);`,
       expectedResult: [{ name: "Joe" }],
     },
@@ -148,18 +148,18 @@ Return \`firstName\`, \`lastName\`, \`city\`, and \`state\`.
 
 | person | |
 |---|---|
-| personId | INTEGER PRIMARY KEY |
-| firstName | TEXT |
-| lastName | TEXT |
+| personId | INT PRIMARY KEY |
+| firstName | VARCHAR(255) |
+| lastName | VARCHAR(255) |
 
 | address | |
 |---|---|
-| addressId | INTEGER PRIMARY KEY |
-| personId | INTEGER |
-| city | TEXT |
-| state | TEXT |`,
-      schemaSql: `CREATE TABLE person (personId INTEGER PRIMARY KEY, firstName TEXT, lastName TEXT);
-CREATE TABLE address (addressId INTEGER PRIMARY KEY, personId INTEGER, city TEXT, state TEXT);`,
+| addressId | INT PRIMARY KEY |
+| personId | INT |
+| city | VARCHAR(255) |
+| state | VARCHAR(255) |`,
+      schemaSql: `CREATE TABLE person (personId INT PRIMARY KEY, firstName VARCHAR(255), lastName VARCHAR(255));
+CREATE TABLE address (addressId INT PRIMARY KEY, personId INT, city VARCHAR(255), state VARCHAR(255));`,
       seedSql: `INSERT INTO person (personId, firstName, lastName) VALUES (1, 'Allen', 'Wang'), (2, 'Bob', 'Alice');
 INSERT INTO address (addressId, personId, city, state) VALUES (1, 2, 'New York', 'NY');`,
       expectedResult: [
@@ -182,9 +182,9 @@ Return the \`class\` name.
 
 | courses | |
 |---|---|
-| student | TEXT |
-| class | TEXT |`,
-      schemaSql: `CREATE TABLE courses (student TEXT, class TEXT);`,
+| student | VARCHAR(255) |
+| class | VARCHAR(255) |`,
+      schemaSql: `CREATE TABLE courses (student VARCHAR(255), class VARCHAR(255));`,
       seedSql: `INSERT INTO courses (student, class) VALUES ('A', 'Math'), ('B', 'English'), ('C', 'Math'), ('D', 'Biology'), ('E', 'Math'), ('F', 'Math'), ('G', 'Math'), ('H', 'English'), ('I', 'Biology'), ('J', 'English'), ('K', 'English'), ('L', 'English');`,
       expectedResult: [{ class: "Math" }, { class: "English" }],
     },
@@ -201,10 +201,10 @@ Return the \`class\` name.
 
 | weather | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| recordDate | TEXT |
-| temperature | INTEGER |`,
-      schemaSql: `CREATE TABLE weather (id INTEGER PRIMARY KEY, recordDate TEXT, temperature INTEGER);`,
+| id | INT PRIMARY KEY |
+| recordDate | VARCHAR(255) |
+| temperature | INT |`,
+      schemaSql: `CREATE TABLE weather (id INT PRIMARY KEY, recordDate VARCHAR(255), temperature INT);`,
       seedSql: `INSERT INTO weather (id, recordDate, temperature) VALUES (1, '2023-01-01', 10), (2, '2023-01-02', 25), (3, '2023-01-03', 20), (4, '2023-01-04', 30);`,
       expectedResult: [{ id: 2 }, { id: 4 }],
     },
@@ -223,9 +223,9 @@ Return the \`num\` (each value once).
 
 | logs | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| num | INTEGER |`,
-      schemaSql: `CREATE TABLE logs (id INTEGER PRIMARY KEY, num INTEGER);`,
+| id | INT PRIMARY KEY |
+| num | INT |`,
+      schemaSql: `CREATE TABLE logs (id INT PRIMARY KEY, num INT);`,
       seedSql: `INSERT INTO logs (id, num) VALUES (1, 1), (2, 1), (3, 1), (4, 2), (5, 1), (6, 2), (7, 2);`,
       expectedResult: [{ num: 1 }],
     },
@@ -244,9 +244,9 @@ Return \`score\` and \`rank\`, ordered by score descending.
 
 | scores | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| score | INTEGER |`,
-      schemaSql: `CREATE TABLE scores (id INTEGER PRIMARY KEY, score INTEGER);`,
+| id | INT PRIMARY KEY |
+| score | INT |`,
+      schemaSql: `CREATE TABLE scores (id INT PRIMARY KEY, score INT);`,
       seedSql: `INSERT INTO scores (id, score) VALUES (1, 350), (2, 365), (3, 400), (4, 385), (5, 400), (6, 365);`,
       expectedResult: [
         { score: 400, rank: 1 },
@@ -272,17 +272,17 @@ Return \`department_name\`, \`employee_name\`, and \`salary\`.
 
 | employee | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| name | TEXT |
-| salary | INTEGER |
-| departmentId | INTEGER |
+| id | INT PRIMARY KEY |
+| name | VARCHAR(255) |
+| salary | INT |
+| departmentId | INT |
 
 | department | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| name | TEXT |`,
-      schemaSql: `CREATE TABLE department (id INTEGER PRIMARY KEY, name TEXT);
-CREATE TABLE employee (id INTEGER PRIMARY KEY, name TEXT, salary INTEGER, departmentId INTEGER);`,
+| id | INT PRIMARY KEY |
+| name | VARCHAR(255) |`,
+      schemaSql: `CREATE TABLE department (id INT PRIMARY KEY, name VARCHAR(255));
+CREATE TABLE employee (id INT PRIMARY KEY, name VARCHAR(255), salary INT, departmentId INT);`,
       seedSql: `INSERT INTO department (id, name) VALUES (1, 'IT'), (2, 'Sales');
 INSERT INTO employee (id, name, salary, departmentId) VALUES (1, 'Joe', 85000, 1), (2, 'Henry', 80000, 2), (3, 'Sam', 60000, 2), (4, 'Max', 90000, 1), (5, 'Janet', 69000, 1), (6, 'Randy', 85000, 1), (7, 'Will', 70000, 1);`,
       expectedResult: [
@@ -312,10 +312,10 @@ Return \`sale_date\`, \`amount\`, and \`running_total\`.
 
 | sales | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| sale_date | TEXT |
-| amount | INTEGER |`,
-      schemaSql: `CREATE TABLE sales (id INTEGER PRIMARY KEY, sale_date TEXT, amount INTEGER);`,
+| id | INT PRIMARY KEY |
+| sale_date | VARCHAR(255) |
+| amount | INT |`,
+      schemaSql: `CREATE TABLE sales (id INT PRIMARY KEY, sale_date VARCHAR(255), amount INT);`,
       seedSql: `INSERT INTO sales (id, sale_date, amount) VALUES (1, '2024-01-01', 100), (2, '2024-01-02', 200), (3, '2024-01-03', 150), (4, '2024-01-04', 300);`,
       expectedResult: [
         { sale_date: "2024-01-01", amount: 100, running_total: 100 },
@@ -339,9 +339,9 @@ Return \`month\`, \`revenue\`, and \`revenue_change\` (current minus previous; \
 
 | monthly_revenue | |
 |---|---|
-| month | TEXT |
-| revenue | INTEGER |`,
-      schemaSql: `CREATE TABLE monthly_revenue (month TEXT PRIMARY KEY, revenue INTEGER);`,
+| month | VARCHAR(255) |
+| revenue | INT |`,
+      schemaSql: `CREATE TABLE monthly_revenue (month VARCHAR(255) PRIMARY KEY, revenue INT);`,
       seedSql: `INSERT INTO monthly_revenue (month, revenue) VALUES ('2024-01', 5000), ('2024-02', 7000), ('2024-03', 6500), ('2024-04', 8000);`,
       expectedResult: [
         { month: "2024-01", revenue: 5000, revenue_change: null },
@@ -365,11 +365,11 @@ Return \`category\`, \`product\`, and \`price\`, ordered by category then price 
 
 | products | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| category | TEXT |
-| product | TEXT |
-| price | INTEGER |`,
-      schemaSql: `CREATE TABLE products (id INTEGER PRIMARY KEY, category TEXT, product TEXT, price INTEGER);`,
+| id | INT PRIMARY KEY |
+| category | VARCHAR(255) |
+| product | VARCHAR(255) |
+| price | INT |`,
+      schemaSql: `CREATE TABLE products (id INT PRIMARY KEY, category VARCHAR(255), product VARCHAR(255), price INT);`,
       seedSql: `INSERT INTO products (id, category, product, price) VALUES (1, 'Electronics', 'Laptop', 1200), (2, 'Electronics', 'Phone', 800), (3, 'Electronics', 'Tablet', 600), (4, 'Clothing', 'Jacket', 150), (5, 'Clothing', 'Shirt', 50), (6, 'Clothing', 'Pants', 80);`,
       expectedResult: [
         { category: "Clothing", product: "Jacket", price: 150 },
@@ -393,7 +393,7 @@ Return \`n\` (position, starting at 1) and \`fib\` (the Fibonacci value).
 ---
 
 *No input tables — generate the sequence purely with SQL.*`,
-      schemaSql: `CREATE TABLE _placeholder (x INTEGER);`,
+      schemaSql: `CREATE TABLE _placeholder (x INT);`,
       seedSql: `INSERT INTO _placeholder VALUES (0);`,
       expectedResult: [
         { n: 1, fib: 0 },
@@ -421,10 +421,10 @@ Return \`name\` and \`depth\`.
 
 | employees | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| name | TEXT |
-| managerId | INTEGER |`,
-      schemaSql: `CREATE TABLE employees (id INTEGER PRIMARY KEY, name TEXT, managerId INTEGER);`,
+| id | INT PRIMARY KEY |
+| name | VARCHAR(255) |
+| managerId | INT |`,
+      schemaSql: `CREATE TABLE employees (id INT PRIMARY KEY, name VARCHAR(255), managerId INT);`,
       seedSql: `INSERT INTO employees (id, name, managerId) VALUES (1, 'Alice', NULL), (2, 'Bob', 1), (3, 'Carol', 1), (4, 'Dave', 2), (5, 'Eve', 2), (6, 'Frank', 3);`,
       expectedResult: [
         { name: "Alice", depth: 1 },
@@ -453,11 +453,11 @@ Return \`product\`, \`q1\`, \`q2\`, \`q3\`, and \`q4\`. Use \`0\` if a product h
 
 | sales | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| product | TEXT |
-| quarter | INTEGER |
-| amount | INTEGER |`,
-      schemaSql: `CREATE TABLE sales (id INTEGER PRIMARY KEY, product TEXT, quarter INTEGER, amount INTEGER);`,
+| id | INT PRIMARY KEY |
+| product | VARCHAR(255) |
+| quarter | INT |
+| amount | INT |`,
+      schemaSql: `CREATE TABLE sales (id INT PRIMARY KEY, product VARCHAR(255), quarter INT, amount INT);`,
       seedSql: `INSERT INTO sales (id, product, quarter, amount) VALUES (1, 'Widget', 1, 100), (2, 'Widget', 2, 200), (3, 'Widget', 4, 150), (4, 'Gadget', 1, 300), (5, 'Gadget', 3, 250), (6, 'Gadget', 4, 400);`,
       expectedResult: [
         { product: "Gadget", q1: 300, q2: 0, q3: 250, q4: 400 },
@@ -479,11 +479,11 @@ Return \`subject\`, \`passed\`, and \`failed\`.
 
 | exam_results | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| student | TEXT |
-| subject | TEXT |
-| score | INTEGER |`,
-      schemaSql: `CREATE TABLE exam_results (id INTEGER PRIMARY KEY, student TEXT, subject TEXT, score INTEGER);`,
+| id | INT PRIMARY KEY |
+| student | VARCHAR(255) |
+| subject | VARCHAR(255) |
+| score | INT |`,
+      schemaSql: `CREATE TABLE exam_results (id INT PRIMARY KEY, student VARCHAR(255), subject VARCHAR(255), score INT);`,
       seedSql: `INSERT INTO exam_results (id, student, subject, score) VALUES (1, 'Alice', 'Math', 85), (2, 'Bob', 'Math', 55), (3, 'Carol', 'Math', 72), (4, 'Alice', 'Science', 45), (5, 'Bob', 'Science', 90), (6, 'Carol', 'Science', 60);`,
       expectedResult: [
         { subject: "Math", passed: 2, failed: 1 },
@@ -508,10 +508,10 @@ Return each qualifying \`user_id\` once.
 
 | logins | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| user_id | INTEGER |
-| login_date | TEXT |`,
-      schemaSql: `CREATE TABLE logins (id INTEGER PRIMARY KEY, user_id INTEGER, login_date TEXT);`,
+| id | INT PRIMARY KEY |
+| user_id | INT |
+| login_date | VARCHAR(255) |`,
+      schemaSql: `CREATE TABLE logins (id INT PRIMARY KEY, user_id INT, login_date VARCHAR(255));`,
       seedSql: `INSERT INTO logins (id, user_id, login_date) VALUES (1, 1, '2024-03-01'), (2, 1, '2024-03-02'), (3, 1, '2024-03-03'), (4, 2, '2024-03-01'), (5, 2, '2024-03-03'), (6, 3, '2024-03-10'), (7, 3, '2024-03-11'), (8, 3, '2024-03-12'), (9, 3, '2024-03-13');`,
       expectedResult: [{ user_id: 1 }, { user_id: 3 }],
     },
@@ -530,10 +530,10 @@ Return \`customer_id\` and \`avg_days\` (rounded to the nearest integer).
 
 | orders | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| customer_id | INTEGER |
-| order_date | TEXT |`,
-      schemaSql: `CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, order_date TEXT);`,
+| id | INT PRIMARY KEY |
+| customer_id | INT |
+| order_date | VARCHAR(255) |`,
+      schemaSql: `CREATE TABLE orders (id INT PRIMARY KEY, customer_id INT, order_date VARCHAR(255));`,
       seedSql: `INSERT INTO orders (id, customer_id, order_date) VALUES (1, 1, '2024-01-01'), (2, 1, '2024-01-11'), (3, 1, '2024-01-21'), (4, 2, '2024-02-01'), (5, 2, '2024-02-15'), (6, 3, '2024-03-01');`,
       expectedResult: [
         { customer_id: 1, avg_days: 10 },
@@ -558,9 +558,9 @@ Return the corrected \`name\`, ordered alphabetically.
 
 | users | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| name | TEXT |`,
-      schemaSql: `CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);`,
+| id | INT PRIMARY KEY |
+| name | VARCHAR(255) |`,
+      schemaSql: `CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(255));`,
       seedSql: `INSERT INTO users (id, name) VALUES (1, 'aLICE'), (2, 'bOB'), (3, 'CAROL'), (4, 'dave');`,
       expectedResult: [
         { name: "Alice" },
@@ -584,9 +584,9 @@ Return \`domain\` and \`count\`, ordered by count descending.
 
 | users | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| email | TEXT |`,
-      schemaSql: `CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT);`,
+| id | INT PRIMARY KEY |
+| email | VARCHAR(255) |`,
+      schemaSql: `CREATE TABLE users (id INT PRIMARY KEY, email VARCHAR(255));`,
       seedSql: `INSERT INTO users (id, email) VALUES (1, 'alice@gmail.com'), (2, 'bob@yahoo.com'), (3, 'carol@gmail.com'), (4, 'dave@gmail.com'), (5, 'eve@yahoo.com');`,
       expectedResult: [
         { domain: "gmail.com", count: 3 },
@@ -611,10 +611,10 @@ Return the student \`name\`.
 
 | enrollments | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| name | TEXT |
-| course | TEXT |`,
-      schemaSql: `CREATE TABLE enrollments (id INTEGER PRIMARY KEY, name TEXT, course TEXT);`,
+| id | INT PRIMARY KEY |
+| name | VARCHAR(255) |
+| course | VARCHAR(255) |`,
+      schemaSql: `CREATE TABLE enrollments (id INT PRIMARY KEY, name VARCHAR(255), course VARCHAR(255));`,
       seedSql: `INSERT INTO enrollments (id, name, course) VALUES (1, 'Alice', 'Math'), (2, 'Alice', 'Science'), (3, 'Bob', 'Math'), (4, 'Carol', 'Science'), (5, 'Dave', 'Math'), (6, 'Dave', 'Science'), (7, 'Dave', 'History');`,
       expectedResult: [{ name: "Alice" }, { name: "Dave" }],
     },
@@ -633,10 +633,10 @@ Return \`customer_type\` (\`'new'\` or \`'returning'\`) and the \`count\` of dis
 
 | orders | |
 |---|---|
-| id | INTEGER PRIMARY KEY |
-| customer_id | INTEGER |
-| order_date | TEXT |`,
-      schemaSql: `CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, order_date TEXT);`,
+| id | INT PRIMARY KEY |
+| customer_id | INT |
+| order_date | VARCHAR(255) |`,
+      schemaSql: `CREATE TABLE orders (id INT PRIMARY KEY, customer_id INT, order_date VARCHAR(255));`,
       seedSql: `INSERT INTO orders (id, customer_id, order_date) VALUES (1, 1, '2024-01-15'), (2, 2, '2024-02-10'), (3, 1, '2024-03-05'), (4, 3, '2024-03-12'), (5, 4, '2024-03-20'), (6, 2, '2024-03-25');`,
       expectedResult: [
         { customer_type: "new", count: 2 },
