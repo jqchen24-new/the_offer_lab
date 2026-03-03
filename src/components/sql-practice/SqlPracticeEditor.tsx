@@ -85,6 +85,36 @@ type LeftTab = (typeof LEFT_TABS)[number];
 
 type ResultTab = "testcase" | "result";
 
+/** Register MySQL-compatible functions so users can write MySQL syntax. */
+function registerMySqlCompat(db: { create_function: (name: string, fn: (...args: unknown[]) => unknown) => void }) {
+  db.create_function("DATEDIFF", (d1: unknown, d2: unknown) => {
+    const a = new Date(String(d1)).getTime();
+    const b = new Date(String(d2)).getTime();
+    if (Number.isNaN(a) || Number.isNaN(b)) return null;
+    return Math.round((a - b) / 86400000);
+  });
+  db.create_function("YEAR", (d: unknown) => {
+    const dt = new Date(String(d));
+    return Number.isNaN(dt.getTime()) ? null : dt.getFullYear();
+  });
+  db.create_function("MONTH", (d: unknown) => {
+    const dt = new Date(String(d));
+    return Number.isNaN(dt.getTime()) ? null : dt.getMonth() + 1;
+  });
+  db.create_function("DAY", (d: unknown) => {
+    const dt = new Date(String(d));
+    return Number.isNaN(dt.getTime()) ? null : dt.getDate();
+  });
+  db.create_function("IF", (cond: unknown, t: unknown, f: unknown) => (cond ? t : f));
+  db.create_function("CONCAT", (...args: unknown[]) => args.map(String).join(""));
+  db.create_function("NOW", () => new Date().toISOString().replace("T", " ").slice(0, 19));
+  db.create_function("CURDATE", () => new Date().toISOString().slice(0, 10));
+  db.create_function("LEFT", (s: unknown, n: unknown) => String(s).slice(0, Number(n)));
+  db.create_function("RIGHT", (s: unknown, n: unknown) => String(s).slice(-Number(n)));
+  db.create_function("LPAD", (s: unknown, len: unknown, pad: unknown) => String(s).padStart(Number(len), String(pad)));
+  db.create_function("RPAD", (s: unknown, len: unknown, pad: unknown) => String(s).padEnd(Number(len), String(pad)));
+}
+
 export function SqlPracticeEditor({
   questionId,
   title,
@@ -129,6 +159,7 @@ export function SqlPracticeEditor({
               : `/${file}`,
         });
         const db = new SQL.Database();
+        registerMySqlCompat(db);
         try {
           db.exec(schemaSql);
           db.exec(seedSql);
@@ -199,6 +230,7 @@ export function SqlPracticeEditor({
             : `/${file}`,
       });
       const db = new SQL.Database();
+      registerMySqlCompat(db);
       try {
         db.exec(schemaSql);
         db.exec(seedSql);
@@ -287,6 +319,7 @@ export function SqlPracticeEditor({
             : `/${file}`,
       });
       const db = new SQL.Database();
+      registerMySqlCompat(db);
       let actualRows: Record<string, unknown>[] = [];
       let runError: string | null = null;
       try {
