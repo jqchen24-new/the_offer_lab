@@ -18,13 +18,20 @@ export async function getSqlQuestionBySlug(slug: string) {
   });
 }
 
-export async function getNextQuestionSlug(currentOrder: number): Promise<string | null> {
-  const next = await prisma.sqlQuestion.findFirst({
-    where: { order: { gt: currentOrder } },
-    orderBy: { order: "asc" },
-    select: { slug: true },
-  });
-  return next?.slug ?? null;
+export async function getAdjacentQuestionSlugs(currentOrder: number) {
+  const [prev, next] = await Promise.all([
+    prisma.sqlQuestion.findFirst({
+      where: { order: { lt: currentOrder } },
+      orderBy: { order: "desc" },
+      select: { slug: true },
+    }),
+    prisma.sqlQuestion.findFirst({
+      where: { order: { gt: currentOrder } },
+      orderBy: { order: "asc" },
+      select: { slug: true },
+    }),
+  ]);
+  return { prevSlug: prev?.slug ?? null, nextSlug: next?.slug ?? null };
 }
 
 export async function getSqlQuestionIdsBySlug() {
