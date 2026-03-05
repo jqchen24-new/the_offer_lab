@@ -199,8 +199,25 @@ export async function getSuggestedPlanForDate(
 
   const dateOnly = new Date(date);
   dateOnly.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dateOnly);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  const todaysTasks = await prisma.task.findMany({
+    where: {
+      userId,
+      scheduledAt: { gte: dateOnly, lte: dayEnd },
+    },
+    include: { tags: true },
+  });
+  const alreadyScheduledTagIds = new Set<string>();
+  for (const task of todaysTasks) {
+    for (const tt of task.tags) {
+      alreadyScheduledTagIds.add(tt.tagId);
+    }
+  }
 
   const sorted = [...tags]
+    .filter((tag) => !alreadyScheduledTagIds.has(tag.id))
     .map((tag) => {
       const minutes = minutesByTagId.get(tag.id) ?? 0;
       const lastPracticed = lastPracticedByTagId.get(tag.id);
