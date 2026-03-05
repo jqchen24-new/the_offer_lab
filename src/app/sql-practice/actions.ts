@@ -80,7 +80,7 @@ export async function submitAttemptAction(
     },
   });
   if (passed) {
-    await checkAndUnlockAchievements(session.user.id);
+    await checkAndUnlockAchievements(session.user.id).catch(() => {});
   }
   return { ok: true, attemptId: attempt.id };
 }
