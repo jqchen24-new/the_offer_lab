@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getPlanTodayTasksAction, type PlanTodayTask } from "@/app/plan/actions";
 import { Badge } from "@/components/ui/Badge";
@@ -21,10 +22,11 @@ function getLocalDateString(): string {
 
 export function PlanTodayList() {
   const [tasks, setTasks] = useState<PlanTodayTask[] | null>(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     getPlanTodayTasksAction(getLocalDateString()).then(setTasks);
-  }, []);
+  }, [searchParams]);
 
   if (tasks === null) {
     return (
