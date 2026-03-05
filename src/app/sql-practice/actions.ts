@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { checkAndUnlockAchievements } from "@/lib/achievements";
 
 // ── Suggestion box ───────────────────────────────────────────────────
 
@@ -78,6 +79,9 @@ export async function submitAttemptAction(
       runResult: runResult != null ? (runResult as Prisma.InputJsonValue) : undefined,
     },
   });
+  if (passed) {
+    await checkAndUnlockAchievements(session.user.id);
+  }
   return { ok: true, attemptId: attempt.id };
 }
 

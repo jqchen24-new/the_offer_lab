@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { getProgressStats } from "@/lib/progress";
+import { getProgressStats, getWeeklyInsights } from "@/lib/progress";
 import { DashboardTodayCardClient } from "@/components/dashboard/DashboardTodayCardClient";
 import { DashboardProgressCard } from "@/components/dashboard/DashboardProgressCard";
+import { DashboardInsightsCard } from "@/components/dashboard/DashboardInsightsCard";
+import { DashboardNudge } from "@/components/dashboard/DashboardNudge";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Dashboard" };
@@ -36,10 +38,14 @@ export default async function DashboardPage() {
   }
 
   let stats: Awaited<ReturnType<typeof getProgressStats>> | null = null;
+  let insightsData: Awaited<ReturnType<typeof getWeeklyInsights>> | null = null;
   let loadError: string | null = null;
 
   try {
-    stats = await getProgressStats(userId);
+    [stats, insightsData] = await Promise.all([
+      getProgressStats(userId),
+      getWeeklyInsights(userId),
+    ]);
   } catch (e) {
     loadError = e instanceof Error ? e.message : "Failed to load dashboard data";
   }
@@ -82,6 +88,10 @@ export default async function DashboardPage() {
         </p>
       </div>
 
+      {insightsData && (
+        <DashboardNudge insights={insightsData.insights} streak={stats.streak} />
+      )}
+
       <div className="grid gap-6 lg:grid-cols-2">
         <DashboardTodayCardClient
           serverTodayStartIso={serverStart.toISOString()}
@@ -98,6 +108,14 @@ export default async function DashboardPage() {
           totalTasksCount={stats.totalTasksCount}
         />
       </div>
+
+      {insightsData && (
+        <DashboardInsightsCard
+          insights={insightsData.insights}
+          achievementCount={insightsData.achievementCount}
+          achievementTotal={insightsData.achievementTotal}
+        />
+      )}
     </div>
   );
 }
