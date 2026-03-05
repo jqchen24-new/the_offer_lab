@@ -59,10 +59,7 @@ export async function getTasksForTodayDashboardWithRange(
   return prisma.task.findMany({
     where: {
       userId,
-      OR: [
-        { scheduledAt: { gte: start, lte: end } },
-        { completedAt: { gte: start, lte: end } },
-      ],
+      scheduledAt: { gte: start, lte: end },
     },
     include: { tags: { include: { tag: true } } },
     orderBy: { scheduledAt: "asc" },

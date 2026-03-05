@@ -25,15 +25,7 @@ export function DashboardTodayCardClient({
 
   useEffect(() => {
     const { startIso, endIso } = getLocalTodayRange();
-    Promise.all([
-      getTodayTasksForRange(startIso, endIso),
-      getTodayTasksForRange(serverTodayStartIso, serverTodayEndIso),
-    ]).then(([clientTasks, serverTasks]) => {
-      const byId = new Map<string, TodayTask>();
-      for (const t of clientTasks) byId.set(t.id, t);
-      for (const t of serverTasks) byId.set(t.id, t);
-      setTasks(Array.from(byId.values()));
-    });
+    getTodayTasksForRange(startIso, endIso).then(setTasks);
   }, [serverTodayStartIso, serverTodayEndIso]);
 
   if (tasks === null) {
