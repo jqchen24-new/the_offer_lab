@@ -1,74 +1,74 @@
 import { auth } from "@/lib/auth";
-import { getProgressStats } from "@/lib/progress";
-import { getUserAchievements } from "@/lib/achievements";
-import { Card, CardTitle } from "@/components/ui/Card";
-import { ProgressStats } from "@/components/progress/ProgressStats";
-import { ProgressChartSection } from "@/components/progress/ProgressChartSection";
-import { AchievementsGrid } from "@/components/progress/AchievementsGrid";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Progress" };
 
 export default async function ProgressPage() {
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return null;
-
-  let stats: Awaited<ReturnType<typeof getProgressStats>> | null = null;
-  let achievements: Awaited<ReturnType<typeof getUserAchievements>> = [];
-  let loadError: string | null = null;
+  let debugInfo = "start";
 
   try {
-    stats = await getProgressStats(userId);
+    debugInfo = "auth";
+    const session = await auth();
+    const userId = session?.user?.id;
+    if (!userId) return <p>Not signed in</p>;
+    debugInfo = "auth ok, userId=" + userId;
+
+    debugInfo = "importing progress";
+    const { getProgressStats } = await import("@/lib/progress");
+    debugInfo = "imported progress";
+
+    debugInfo = "fetching stats";
+    const stats = await getProgressStats(userId);
+    debugInfo = "stats ok: " + JSON.stringify(Object.keys(stats));
+
+    let achievements: unknown[] = [];
+    try {
+      debugInfo = "importing achievements";
+      const { getUserAchievements } = await import("@/lib/achievements");
+      debugInfo = "imported achievements";
+      achievements = await getUserAchievements(userId);
+      debugInfo = "achievements ok: " + achievements.length;
+    } catch (e) {
+      debugInfo = "achievements failed: " + (e instanceof Error ? e.message : String(e));
+    }
+
+    const { Card, CardTitle } = await import("@/components/ui/Card");
+    const { ProgressStats } = await import("@/components/progress/ProgressStats");
+    const { ProgressChartSection } = await import("@/components/progress/ProgressChartSection");
+
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+            Progress
+          </h1>
+          <p className="mt-1 text-neutral-600 dark:text-neutral-400">
+            Time and sessions by tag, plus your streak. Mark tasks as <strong>Done</strong> on Tasks or Daily Plan for them to count here.
+          </p>
+        </div>
+
+        <ProgressStats stats={stats} />
+
+        <Card>
+          <CardTitle>Time by tag</CardTitle>
+          <ProgressChartSection data={stats.byTag} />
+        </Card>
+      </div>
+    );
   } catch (e) {
-    loadError = e instanceof Error ? e.message : "Failed to load progress data";
-  }
-
-  try {
-    achievements = await getUserAchievements(userId);
-  } catch {
-    // achievements table may not exist yet
-  }
-
-  if (loadError || !stats) {
+    const msg = e instanceof Error ? e.message : String(e);
+    const stack = e instanceof Error ? e.stack?.slice(0, 800) : "";
     return (
       <div className="space-y-4">
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
           Progress
         </h1>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/40">
-          <p className="font-medium text-red-800 dark:text-red-200">
-            Something went wrong
-          </p>
-          <p className="mt-1 text-sm text-red-700 dark:text-red-300">
-            {loadError ?? "Could not load your data."}
-          </p>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <p className="font-medium text-red-800">Debug: {debugInfo}</p>
+          <p className="mt-2 text-sm font-mono text-red-700">{msg}</p>
+          <p className="mt-2 text-xs font-mono text-red-600 whitespace-pre-wrap">{stack}</p>
         </div>
       </div>
     );
   }
-
-  return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-          Progress
-        </h1>
-        <p className="mt-1 text-neutral-600 dark:text-neutral-400">
-          Time and sessions by tag, plus your streak. Mark tasks as <strong>Done</strong> on Tasks or Daily Plan for them to count here.
-        </p>
-      </div>
-
-      <ProgressStats stats={stats} />
-
-      {achievements.length > 0 && (
-        <AchievementsGrid achievements={achievements} />
-      )}
-
-      <Card>
-        <CardTitle>Time by tag</CardTitle>
-        <ProgressChartSection data={stats.byTag} />
-      </Card>
-    </div>
-  );
 }
