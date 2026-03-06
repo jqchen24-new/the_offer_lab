@@ -145,20 +145,23 @@ export async function getWeeklyInsights(userId: string): Promise<{
     });
   }
 
-  // SQL solved this week
+  // SQL solved this week (optional: main branch has no SqlAttempt model)
   const weekStart = new Date();
   weekStart.setDate(weekStart.getDate() - weekStart.getDay());
   weekStart.setHours(0, 0, 0, 0);
 
-  const sqlSolvedThisWeek = await prisma.sqlAttempt.findMany({
-    where: {
-      userId,
-      passed: true,
-      createdAt: { gte: weekStart },
-    },
-    select: { questionId: true },
-    distinct: ["questionId"],
-  });
+  const prismaAny = prisma as typeof prisma & { sqlAttempt?: { findMany: (args: unknown) => Promise<{ questionId: string }[]> } };
+  const sqlSolvedThisWeek = prismaAny.sqlAttempt
+    ? await prismaAny.sqlAttempt.findMany({
+        where: {
+          userId,
+          passed: true,
+          createdAt: { gte: weekStart },
+        },
+        select: { questionId: true },
+        distinct: ["questionId"],
+      })
+    : [];
   if (sqlSolvedThisWeek.length > 0) {
     insights.push({
       type: "positive",
