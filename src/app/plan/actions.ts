@@ -8,7 +8,9 @@ import { checkAndUnlockAchievements } from "@/lib/achievements";
 
 export type PlanTodayTask = Awaited<ReturnType<typeof getTasks>>[number];
 
-export async function addSuggestedToTodayAction(formData: FormData): Promise<void> {
+export type AddToTodayResult = { ok: true } | { ok: false; error?: string };
+
+export async function addSuggestedToTodayAction(formData: FormData): Promise<AddToTodayResult> {
   const session = await auth();
   if (!session?.user?.id) redirect("/signin");
 
@@ -17,7 +19,7 @@ export async function addSuggestedToTodayAction(formData: FormData): Promise<voi
   const suggestedMinutes = parseInt(formData.get("suggestedMinutes") as string, 10) || 30;
   const forDateStr = formData.get("forDate") as string | null;
 
-  if (!tagId || !tagName) return;
+  if (!tagId || !tagName) return { ok: false };
 
   let scheduledAt: Date;
   if (forDateStr && /^\d{4}-\d{2}-\d{2}$/.test(forDateStr)) {
@@ -38,7 +40,7 @@ export async function addSuggestedToTodayAction(formData: FormData): Promise<voi
   revalidatePath("/plan");
   revalidatePath("/tasks");
   revalidatePath("/progress");
-  redirect("/plan?success=added");
+  return { ok: true };
 }
 
 /** Fetch tasks scheduled for the given date (YYYY-MM-DD, interpreted as UTC day). */
