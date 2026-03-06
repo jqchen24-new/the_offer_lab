@@ -31,6 +31,7 @@ export function SuccessBanner() {
       return;
     }
     setVisible(true);
+    router.refresh();
     const timer = setTimeout(() => {
       const next = new URLSearchParams(searchParams);
       next.delete("success");
