@@ -718,8 +718,8 @@ Return a single column \`salary\`.
 | id | INT PRIMARY KEY |
 | salary | INT |`,
       schemaSql: `CREATE TABLE employees (id INT PRIMARY KEY, salary INT);`,
-      seedSql: `INSERT INTO employees (id, salary) VALUES (1, 100), (2, 200), (3, 300), (4, 200), (5, 300), (6, 400);`,
-      expectedResult: [{ salary: 200 }],
+      seedSql: `INSERT INTO employees (id, salary) VALUES (1, 100), (2, 200);`,
+      expectedResult: [{ salary: null }],
     },
 
     // ── Aggregation Patterns ──────────────────────────────────────────
