@@ -1322,6 +1322,8 @@ Return \`customer_id\` and the \`order_date\` of their single order.
       order: 49,
       problemStatement: `Find students who scored **above the average** for their subject.
 
+Note: A student may take multiple exams for the same subject (i.e., multiple rows per \`student\` + \`subject\`).
+
 Return \`student\`, \`subject\`, and \`score\`.
 
 ---
