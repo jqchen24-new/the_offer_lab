@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { resolveProfession, getCopyForProfession } from "@/lib/profession-config";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 const links = [
   { href: "/dashboard", label: "Dashboard" },
@@ -79,6 +80,7 @@ export function Nav() {
 
         {/* Right: user menu (desktop dropdown) + mobile hamburger */}
         <div className="flex shrink-0 items-center gap-2 md:gap-3">
+          <ThemeToggle />
           <div className="hidden h-6 w-px bg-neutral-200 dark:bg-neutral-700 md:block" aria-hidden />
           <div className="flex items-center gap-2 md:gap-3">
             <button

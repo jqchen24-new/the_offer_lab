@@ -9,6 +9,7 @@ import remarkGfm from "remark-gfm";
 import { compareSqlResult } from "@/lib/sql-practice";
 import { submitAttemptAction, requestSqlFeedbackAction } from "@/app/sql-practice/actions";
 import { Button } from "@/components/ui/Button";
+import { usePrefersDark } from "@/hooks/usePrefersDark";
 
 type TableSchema = { tableName: string; columns: { name: string; type?: string }[] };
 
@@ -265,6 +266,7 @@ export function SqlPracticeEditor({
   const [loading, setLoading] = useState(false);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [sampleData, setSampleData] = useState<Record<string, Record<string, unknown>[]>>({});
+  const prefersDark = usePrefersDark();
 
   const schemaTables = useMemo(() => parseSchema(schemaSql), [schemaSql]);
 
@@ -683,7 +685,7 @@ export function SqlPracticeEditor({
                   <button
                     key={sub.id}
                     type="button"
-                    className="w-full rounded-lg border border-neutral-200 bg-white p-3 text-left transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-750"
+                    className="w-full rounded-lg border border-neutral-200 bg-white p-3 text-left transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700/50"
                     onClick={() => {
                       setCode(sub.submittedSql);
                       setLeftTab("Description");
@@ -750,10 +752,11 @@ export function SqlPracticeEditor({
           <CodeMirror
             value={code}
             height="280px"
+            theme={prefersDark ? "dark" : "light"}
             extensions={[sql()]}
             onChange={setCode}
             basicSetup={{ lineNumbers: true }}
-            className="text-sm [&_.cm-editor]:outline-none"
+            className="text-sm [&_.cm-editor]:outline-none [&_.cm-scroller]:font-mono"
           />
         </div>
         <div className="flex shrink-0 items-center gap-2 border-t border-neutral-200 px-3 py-2 dark:border-neutral-800">

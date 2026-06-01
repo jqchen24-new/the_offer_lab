@@ -9,6 +9,7 @@ import { Nav } from "@/components/layout/Nav";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Footer } from "@/components/layout/Footer";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ToastProvider } from "@/components/ui/Toast";
 import { SuccessToaster } from "@/components/ui/SuccessToaster";
 import { OnboardingGate } from "@/components/OnboardingGate";
@@ -51,8 +52,11 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen antialiased">
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(t!=='light'&&d))document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}})();`}
+        </Script>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-9LZHQTTC8C"
           strategy="afterInteractive"
@@ -66,16 +70,18 @@ export default async function RootLayout({
           `}
         </Script>
         <SessionProvider session={session}>
-          <ToastProvider>
-            <OnboardingGate>
-              <Nav />
-              <div className="flex min-h-screen flex-col">
-                <PageContainer className="flex-1">{children}</PageContainer>
-                <Footer />
-              </div>
-            </OnboardingGate>
-            <SuccessToaster />
-          </ToastProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              <OnboardingGate>
+                <Nav />
+                <div className="flex min-h-screen flex-col">
+                  <PageContainer className="flex-1">{children}</PageContainer>
+                  <Footer />
+                </div>
+              </OnboardingGate>
+              <SuccessToaster />
+            </ToastProvider>
+          </ThemeProvider>
         </SessionProvider>
         <ReminderScheduler enabled={reminderEnabled} time={reminderTime} />
         <TimezoneCookie />
