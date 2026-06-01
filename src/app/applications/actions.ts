@@ -11,6 +11,7 @@ import {
   APPLICATION_STATUSES,
   isValidStatus,
 } from "@/lib/applications";
+import { parseDateInput } from "@/lib/date-only";
 
 export async function createApplicationAction(formData: FormData): Promise<void> {
   const session = await auth();
@@ -33,7 +34,7 @@ export async function createApplicationAction(formData: FormData): Promise<void>
   if (!appliedAtStr) {
     redirect(`/applications?error=${encodeURIComponent("Date applied is required")}`);
   }
-  const appliedAt = new Date(appliedAtStr);
+  const appliedAt = parseDateInput(appliedAtStr);
   if (Number.isNaN(appliedAt.getTime())) {
     redirect(`/applications?error=${encodeURIComponent("Invalid date")}`);
   }
@@ -71,7 +72,7 @@ export async function updateApplicationAction(formData: FormData) {
   if (!company) return { error: "Company is required" };
   if (!role) return { error: "Role is required" };
   if (!appliedAtStr) return { error: "Date applied is required" };
-  const appliedAt = new Date(appliedAtStr);
+  const appliedAt = parseDateInput(appliedAtStr);
   if (Number.isNaN(appliedAt.getTime())) return { error: "Invalid date" };
   if (!status || !isValidStatus(status)) return { error: "Invalid status" };
 

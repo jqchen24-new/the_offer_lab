@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getApplications } from "@/lib/applications";
+import { formatDateOnly, formatTimestampDate } from "@/lib/date-only";
 
 function escapeCsvField(value: string | null | undefined): string {
   if (value == null) return "";
@@ -31,9 +32,9 @@ export async function GET() {
     escapeCsvField(app.company),
     escapeCsvField(app.role),
     escapeCsvField(app.status),
-    escapeCsvField(app.appliedAt.toISOString().slice(0, 10)),
+    escapeCsvField(formatDateOnly(app.appliedAt)),
     escapeCsvField(
-      app.statusUpdatedAt ? app.statusUpdatedAt.toISOString().slice(0, 10) : ""
+      app.statusUpdatedAt ? formatTimestampDate(app.statusUpdatedAt) : ""
     ),
     escapeCsvField(app.jobUrl ?? ""),
     escapeCsvField(app.nextStepOrDeadline ?? ""),

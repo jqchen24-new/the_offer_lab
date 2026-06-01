@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { formatDateOnly, formatTimestampDate } from "@/lib/date-only";
 import { ApplicationDeleteButton } from "./ApplicationDeleteButton";
 
 type Application = {
@@ -47,10 +48,9 @@ export function ApplicationsList({
   return (
     <ul className="space-y-2">
       {applications.map((app) => {
-        const appliedAt = new Date(app.appliedAt);
-        const dateStr = appliedAt.toLocaleDateString();
+        const dateStr = formatDateOnly(app.appliedAt);
         const statusUpdatedStr = app.statusUpdatedAt
-          ? new Date(app.statusUpdatedAt).toLocaleDateString()
+          ? formatTimestampDate(app.statusUpdatedAt)
           : null;
         return (
           <li
@@ -63,7 +63,7 @@ export function ApplicationsList({
               </p>
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 Applied {dateStr}
-                {statusUpdatedStr && statusUpdatedStr !== dateStr && ` · Status updated ${statusUpdatedStr}`}
+                {statusUpdatedStr && ` · Status updated ${statusUpdatedStr}`}
                 {app.nextStepOrDeadline && ` · ${app.nextStepOrDeadline}`}
               </p>
               <div className="mt-1">

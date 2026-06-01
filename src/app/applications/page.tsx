@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getApplications, APPLICATION_STATUSES } from "@/lib/applications";
+import { todayDateInputValue } from "@/lib/date-only";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { SuccessBanner } from "@/components/ui/SuccessBanner";
 import { Button } from "@/components/ui/Button";
@@ -39,7 +41,9 @@ export default async function ApplicationsPage({
     sort,
   });
 
-  const appliedAtDefault = new Date().toISOString().slice(0, 10);
+  const tzOffsetRaw = (await cookies()).get("tzOffset")?.value;
+  const tzOffset = tzOffsetRaw != null ? parseInt(tzOffsetRaw, 10) : null;
+  const appliedAtDefault = todayDateInputValue(tzOffset);
 
   return (
     <div className="space-y-8">

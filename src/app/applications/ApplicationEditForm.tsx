@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { APPLICATION_STATUSES } from "@/lib/application-constants";
+import { toDateInputValue, formatTimestampDate } from "@/lib/date-only";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { updateApplicationAction } from "./actions";
@@ -12,17 +13,15 @@ type App = {
   company: string;
   role: string;
   status: string;
-  appliedAt: Date;
-  statusUpdatedAt: Date | null;
+  appliedAt: Date | string;
+  statusUpdatedAt: Date | string | null;
   notes: string | null;
   jobUrl: string | null;
   nextStepOrDeadline: string | null;
 };
 
 export function ApplicationEditForm({ app }: { app: App }) {
-  const appliedAtStr = new Date(app.appliedAt.getTime() - app.appliedAt.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 10);
+  const appliedAtStr = toDateInputValue(app.appliedAt);
 
   const [state, formAction] = useActionState<{ error: string | null }, FormData>(
     async (_, formData) => updateApplicationAction(formData),
@@ -59,7 +58,7 @@ export function ApplicationEditForm({ app }: { app: App }) {
           </select>
           {app.statusUpdatedAt && (
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Status last updated {new Date(app.statusUpdatedAt).toLocaleDateString()}
+              Status last updated {formatTimestampDate(app.statusUpdatedAt)}
             </p>
           )}
         </div>

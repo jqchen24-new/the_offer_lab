@@ -54,7 +54,7 @@ export async function createApplication(
       role: data.role.trim(),
       status: data.status,
       appliedAt: data.appliedAt,
-      statusUpdatedAt: data.appliedAt, // initial status set at apply time
+      statusUpdatedAt: new Date(),
       notes: data.notes?.trim() || null,
       jobUrl: data.jobUrl?.trim() || null,
       nextStepOrDeadline: data.nextStepOrDeadline?.trim() || null,
